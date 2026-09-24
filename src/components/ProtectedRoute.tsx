@@ -10,7 +10,10 @@ export function ProtectedRoute({ children, adminOnly = false, blockForEnem = fal
   const { user, session, status, isSessionHydrated, isAdmin, isBlocked, loading, roleChecked, signOut } = useAuth();
   const { data: profile } = useUserProfile(user?.id);
 
-  if (loading || !isSessionHydrated || status === 'loading' || status === 'hydrating' || (user && !roleChecked)) {
+  // A role só é necessária para uma rota administrativa. Exigir essa consulta
+  // em toda rota deixava o aluno preso em “Carregando” quando a rede voltava de
+  // uma aba suspensa com uma requisição de role pendente.
+  if (loading || !isSessionHydrated || status === 'loading' || status === 'hydrating' || (adminOnly && user && !roleChecked)) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background">
         <GlitchLoader text="Carregando..." />

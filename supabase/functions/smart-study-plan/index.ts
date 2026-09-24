@@ -493,6 +493,6 @@ Reorganize o que falta, mantenha em revisão leve o que já foi bem absorvido e 
   } catch (e) {
     const message = e instanceof Error ? e.message : "Erro inesperado";
     console.error("[smart-study-plan]", message);
-    return json({ error: message }, 500);
+    return json({ error: "Não foi possível gerar o plano de estudos." }, 500);
   }
 });

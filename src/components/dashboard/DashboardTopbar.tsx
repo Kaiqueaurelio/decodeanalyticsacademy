@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { supabase } from '@/integrations/supabase/client';
-import { Terminal, Maximize2 } from 'lucide-react';
 
 import { NotificationBell } from '@/components/NotificationBell';
 import { AuthStatusIndicator } from '@/components/AuthStatusIndicator';
@@ -20,9 +19,9 @@ import logoOwl from '@/assets/owl-icon.png';
 export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMobile?: boolean }) {
   const navigate = useNavigate();
   const { user, signOut, isAdmin: authIsAdmin } = useAuth();
-  const { theme, visualStyle, toggleTheme, toggleVisualStyle } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { data: profile } = useUserProfile(user?.id);
-  const isAdmin = authIsAdmin || profile?.is_admin;
+  const isAdmin = authIsAdmin;
 
   const [query, setQuery] = useState('');
   const { isOpen: navOpen, setOpen: setNavOpen } = useSidebar();
@@ -79,7 +78,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
 
   return (
     <header className="sticky top-0 z-30 bg-background/95 border-b border-border shadow-none">
-      <div className="flex items-center gap-2 px-3 sm:px-6 lg:px-8 h-16">
+      <div className="flex min-w-0 items-center gap-2 overflow-hidden px-3 sm:px-6 lg:px-8 h-16">
         <Sheet open={navOpen} onOpenChange={setNavOpen}>
           <SheetTrigger asChild>
             <Button
@@ -122,18 +121,18 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
         </Button>
 
         {isAdmin && (
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate('/admin')}
-              className="hidden min-[1150px]:flex h-9 px-3 gap-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent font-bold text-xs rounded-xl shadow-sm shadow-accent/5"
+              className="hidden min-[1400px]:flex h-9 px-3 gap-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent font-bold text-xs rounded-xl shadow-sm shadow-accent/5"
             >
               <ShieldCheck strokeWidth={2.5} className="h-4 w-4" />
               <span>Painel Admin</span>
             </Button>
             
-            <div className="hidden min-[1300px]:flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+            <div className="hidden min-[1500px]:flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
               <Button
                 variant="ghost"
                 size="sm"
@@ -160,7 +159,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
               variant="outline"
               size="sm"
               onClick={() => navigate('/admin')}
-              className="min-[1150px]:hidden h-9 w-9 p-0 border-accent/50 text-accent hover:bg-accent/10 rounded-xl"
+              className="min-[1400px]:hidden h-9 w-9 p-0 border-accent/50 text-accent hover:bg-accent/10 rounded-xl"
               aria-label="Painel Admin"
             >
               <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px]" />
@@ -168,7 +167,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
           </div>
         )}
 
-        <form onSubmit={submit} className={`flex-1 max-w-2xl relative ${hideSearchOnMobile ? 'hidden md:block' : ''}`}>
+        <form onSubmit={submit} className={`min-w-0 flex-1 basis-0 max-w-2xl relative ${hideSearchOnMobile ? 'hidden md:block' : ''}`}>
           <Search strokeWidth={2.5} className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[16px] w-[16px] text-muted-foreground pointer-events-none" />
           <input
             type="text"
@@ -180,17 +179,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
           />
         </form>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleVisualStyle} 
-            className="h-9 w-9 rounded-xl" 
-            title={visualStyle === 'industrial' ? 'Mudar para modo Minimalista' : 'Mudar para modo Industrial'}
-            aria-label="Alternar estilo visual"
-          >
-            {visualStyle === 'industrial' ? <Maximize2 strokeWidth={2.5} className="h-[16px] w-[16px]" /> : <Terminal strokeWidth={2.5} className="h-[16px] w-[16px]" />}
-          </Button>
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 rounded-xl" aria-label="Alternar tema">
             {theme === 'dark' ? <Sun strokeWidth={2.5} className="h-[16px] w-[16px]" /> : <Moon strokeWidth={2.5} className="h-[16px] w-[16px]" />}
           </Button>
@@ -200,18 +189,18 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
 
           <button
             onClick={() => navigate('/profile')}
-            className="hidden sm:flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-2xl bg-card/60 border border-border hover:border-primary/50 transition-all"
+            className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 pl-1 pr-1.5 sm:pr-3 py-1 rounded-2xl bg-card/60 border border-border hover:border-primary/50 transition-all"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold text-xs">
               {initials}
             </div>
-            <div className="leading-tight text-left">
+            <div className="hidden min-[1400px]:block leading-tight text-left">
               <div className="text-xs font-bold truncate max-w-[120px]">
                 {profile?.full_name || 'Aluno'}
               </div>
               <div className={`text-[10px] ${isAdmin ? 'text-accent font-semibold' : 'text-muted-foreground'}`}>{roleLabel}</div>
             </div>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className="hidden min-[1400px]:block h-3.5 w-3.5 text-muted-foreground" />
           </button>
           <Button
             variant="ghost"

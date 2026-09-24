@@ -1,15 +1,17 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useMemo } from 'react';
 
 export function FloatingParticles({ count = 20 }: { count?: number }) {
   const particles = useMemo(() =>
     Array.from({ length: count }, (_, i) => ({
       id: i,
-      size: Math.random() * 4 + 2,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      duration: Math.random() * 15 + 10,
-      delay: Math.random() * 5,
-      opacity: Math.random() * 0.15 + 0.03,
+      size: secureRandom() * 4 + 2,
+      x: secureRandom() * 100,
+      y: secureRandom() * 100,
+      duration: secureRandom() * 15 + 10,
+      delay: secureRandom() * 5,
+      opacity: secureRandom() * 0.15 + 0.03,
     })),
     [count]
   );

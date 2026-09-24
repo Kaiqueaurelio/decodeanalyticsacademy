@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("fatal", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
+    return new Response(JSON.stringify({ error: "Não foi possível processar a apostila." }), {
       status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }

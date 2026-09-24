@@ -15,15 +15,15 @@ describe('desduplicação segura do conteúdo das apostilas', () => {
     expect(isSubstantialDuplicateContent('# Introdução\n\nTexto completo', 'Introdução Texto completo')).toBe(true);
   });
 
-  it('remove versões quase idênticas', () => {
+  it('remove uma versão menor quando ela está inteira dentro da versão maior', () => {
     const full = `${'conteúdo principal '.repeat(100)}apêndice curto`;
-    const almostSame = 'conteúdo principal '.repeat(100);
-    expect(isSubstantialDuplicateContent(full, almostSame)).toBe(true);
+    const smaller = 'conteúdo principal '.repeat(100);
+    expect(isSubstantialDuplicateContent(full, smaller)).toBe(true);
   });
 
-  it('não confunde um resumo curto com a apostila completa', () => {
+  it('não confunde textos semelhantes, mas não contidos, com duplicatas', () => {
     const summary = 'Bem-vindo à Teoria da Computação. Este material cobre os fundamentos.';
-    const full = `${summary}\n\n${'Explicação detalhada das máquinas de estado e linguagens formais. '.repeat(100)}`;
+    const full = `Fundamentos de Teoria da Computação: linguagens, autômatos e máquinas de Turing. ${'Explicação detalhada das máquinas de estado e linguagens formais. '.repeat(100)}`;
     expect(isSubstantialDuplicateContent(summary, full)).toBe(false);
   });
 
@@ -33,7 +33,7 @@ describe('desduplicação segura do conteúdo das apostilas', () => {
     expect(isSubstantialDuplicateContent(original, expanded)).toBe(true);
   });
 
-  it('mantém apenas a versão mais completa de páginas duplicadas', () => {
+  it('mantém apenas a versão mais completa quando uma página está inteira contida na outra', () => {
     const original = 'fundamento importante com explicação detalhada '.repeat(80);
     const expanded = `${original}\n\n${'exercício complementar '.repeat(80)}`;
     const pages = mergeDistinctPages([
@@ -41,5 +41,16 @@ describe('desduplicação segura do conteúdo das apostilas', () => {
       { id: 'completa', content: expanded },
     ]);
     expect(pages).toEqual([{ id: 'completa', content: expanded }]);
+  });
+
+  it('preserva duas páginas quando ambas têm conteúdo único', () => {
+    const first = 'conceitos fundamentais e introdução ao assunto';
+    const second = 'conceitos fundamentais e aplicações práticas avançadas';
+    const pages = mergeDistinctPages([
+      { id: 'primeira', content: first },
+      { id: 'segunda', content: second },
+    ]);
+    expect(pages).toHaveLength(2);
+    expect(pages.map((page) => page.id)).toEqual(['primeira', 'segunda']);
   });
 });

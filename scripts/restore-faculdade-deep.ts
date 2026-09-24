@@ -95,12 +95,12 @@ async function runRestoration() {
         published: true
       }).eq('id', apostilaId);
       
-      if (updateError) console.error(`Error updating ${item.title}:`, updateError);
+      if (updateError) console.error('Error updating apostila', { title: item.title, error: updateError });
 
       await supabase.from('apostila_pages').delete().eq('apostila_id', apostilaId);
       await supabase.from('exercises').delete().eq('apostila_id', apostilaId);
     } else {
-      console.log(`Creating new apostila entry for: ${item.title}`);
+      console.log('Creating new apostila entry', { title: item.title });
       const { data: newApostila, error: insertError } = await supabase.from('apostilas').insert({
         title: item.title,
         subject: item.subject,
@@ -111,7 +111,7 @@ async function runRestoration() {
       }).select().single();
       
       if (insertError) {
-        console.error(`Error inserting ${item.title}:`, insertError);
+        console.error('Error inserting apostila', { title: item.title, error: insertError });
         continue;
       }
       apostilaId = newApostila.id;

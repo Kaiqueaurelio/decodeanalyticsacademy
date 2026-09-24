@@ -1,7 +1,7 @@
-import { supabase } from "@/integrations/supabase/client";
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, supabase } from "@/integrations/supabase/client";
 import { getCurrentAccessToken } from "@/lib/auth-session";
 
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1`;
 
 export interface StreamHandlers {
   /** Chamado a cada pedaço de texto gerado. */
@@ -10,6 +10,8 @@ export interface StreamHandlers {
   onTool?: (name: string) => void;
   /** Chamado no fim, com as ações executadas. */
   onDone?: (actions: any[]) => void;
+  /** Chamado quando uma ação administrativa exige confirmação explícita. */
+  onConfirmationRequired?: (payload: { tool: string; args: Record<string, unknown>; confirmation_token: string }) => void;
 }
 
 export interface StreamResult {
@@ -39,7 +41,7 @@ export async function streamFunction(
       signal,
       headers: {
         "Content-Type": "application/json",
-        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        apikey: SUPABASE_PUBLISHABLE_KEY,
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
       body: JSON.stringify(body),
@@ -56,6 +58,7 @@ export async function streamFunction(
         return { error: parsed?.error || text.slice(0, 200) || `HTTP ${res.status}` };
       }
       // Resposta JSON (modo não-streaming)
+      if (parsed?.confirmation_required) handlers.onConfirmationRequired?.(parsed.confirmation_required);
       if (parsed?.reply) handlers.onDelta?.(String(parsed.reply));
       handlers.onDone?.(parsed?.actions ?? []);
       return { error: null };
@@ -87,6 +90,7 @@ export async function streamFunction(
 
         if (evt.type === "delta" && typeof evt.text === "string") handlers.onDelta?.(evt.text);
         else if (evt.type === "tool" && evt.name) handlers.onTool?.(String(evt.name));
+        else if (evt.type === "confirmation_required") handlers.onConfirmationRequired?.(evt.confirmation_required ?? evt.payload);
         else if (evt.type === "done") { doneCalled = true; handlers.onDone?.(evt.actions ?? []); }
         else if (evt.type === "error") errorMsg = String(evt.error ?? "Erro no assistente.");
       }

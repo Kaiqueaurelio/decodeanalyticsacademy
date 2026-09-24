@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 // Hook: gerencia notificações in-app (sino) com realtime.
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,7 +45,7 @@ export function useNotifications() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`notif:${user.id}:${Math.random().toString(36).slice(2)}`)
+      .channel(`notif:${user.id}:${secureRandom().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         {

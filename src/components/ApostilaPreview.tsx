@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Lock, LogIn, UserPlus, ArrowRight } from 'lucide-react';
@@ -18,10 +18,10 @@ export function ApostilaPreview({
   isLoggedIn,
 }: ApostilaPreviewProps) {
   const navigate = useNavigate();
-  const [showBlocker, setShowBlocker] = useState(!isLoggedIn);
+  const [showBlocker] = useState(!isLoggedIn);
 
-  // Preview em TEXTO PURO (sem HTML) — evita XSS em visitantes deslogados
-  // caso o conteúdo salvo contenha markup malicioso.
+  // Visitantes recebem apenas um trecho seguro. O conteúdo completo só é
+  // renderizado pelo leitor autenticado, evitando expor apostilas inteiras.
   const textPreview = content
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
@@ -29,19 +29,15 @@ export function ApostilaPreview({
     .substring(0, 500);
   const hasMoreContent = content.length > 500;
 
-  // Quando o aluno está logado, o conteúdo formatado é renderizado pelas
-  // seções abaixo (ApostilaContentBoundary). Esse preview só serve para o
-  // estado deslogado (paywall com blur).
   if (isLoggedIn) {
     return null;
   }
 
   return (
     <div className="relative">
-      {/* Conteúdo com efeito de desfoque */}
       <motion.div
         animate={{ opacity: showBlocker ? 0.5 : 1 }}
-        className={`${showBlocker ? 'blur-sm' : ''} transition-all`}
+        className={showBlocker ? 'blur-sm transition-all' : 'transition-all'}
       >
         <p className="prose prose-sm max-w-none whitespace-pre-wrap">
           {textPreview}
@@ -53,7 +49,6 @@ export function ApostilaPreview({
         )}
       </motion.div>
 
-      {/* Bloqueador com CTA */}
       {showBlocker && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -61,14 +56,12 @@ export function ApostilaPreview({
           className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background rounded-xl"
         >
           <div className="text-center space-y-6 max-w-md p-6">
-            {/* Ícone */}
             <div className="flex justify-center">
               <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                 <Lock className="h-8 w-8 text-primary" />
               </div>
             </div>
 
-            {/* Título e Descrição */}
             <div className="space-y-2">
               <h3 className="text-xl font-bold">Conteúdo Exclusivo</h3>
               <p className="text-sm text-muted-foreground">
@@ -76,10 +69,9 @@ export function ApostilaPreview({
               </p>
             </div>
 
-            {/* Botões de Ação */}
             <div className="space-y-3">
               <Button
-                onClick={() => navigate('/login', { state: { from: `/apostila/${apostilaId}` } })}
+                onClick={() => navigate('/login', { state: { from: '/apostila/' + apostilaId } })}
                 className="w-full gap-2 h-11"
               >
                 <LogIn size={18} />
@@ -87,7 +79,7 @@ export function ApostilaPreview({
               </Button>
 
               <Button
-                onClick={() => navigate('/login', { state: { from: `/apostila/${apostilaId}`, signup: true } })}
+                onClick={() => navigate('/login', { state: { from: '/apostila/' + apostilaId, signup: true } })}
                 variant="outline"
                 className="w-full gap-2 h-11"
               >
@@ -96,7 +88,6 @@ export function ApostilaPreview({
               </Button>
             </div>
 
-            {/* Benefícios */}
             <div className="pt-4 border-t border-border/50 space-y-2 text-left">
               <p className="text-xs font-semibold text-muted-foreground uppercase">
                 Ao se cadastrar, você terá acesso a:
@@ -109,8 +100,8 @@ export function ApostilaPreview({
                   'Exercícios e simulados',
                   'Flashcards inteligentes',
                   'Gamificação e ranking',
-                ].map((benefit, i) => (
-                  <li key={i} className="flex items-center gap-2">
+                ].map((benefit) => (
+                  <li key={benefit} className="flex items-center gap-2">
                     <ArrowRight size={12} className="text-primary" />
                     {benefit}
                   </li>

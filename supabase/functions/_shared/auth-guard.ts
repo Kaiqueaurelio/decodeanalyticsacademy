@@ -53,7 +53,23 @@ export async function requireUser(
         _user_id: userId,
         _role: "admin",
       });
-      if (roleErr || !isAdmin) {
+      // `has_role` é o caminho preferencial. O fallback consulta a mesma fonte
+      // de autorização com a chave de serviço caso uma instalação antiga ainda
+      // não possua a RPC (ou a tenha ficado fora de sincronia após uma migração).
+      // A identidade do solicitante já foi validada acima com getUser().
+      let confirmedAdmin = isAdmin === true;
+      if (!confirmedAdmin) {
+        const { data: roleRows, error: lookupErr } = await admin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "admin")
+          .limit(1);
+        confirmedAdmin = !lookupErr && Array.isArray(roleRows) && roleRows.length === 1;
+      }
+
+      if (!confirmedAdmin) {
+        if (roleErr) console.error("Admin role RPC failed", roleErr.code ?? "unknown");
         return {
           ok: false,
           response: new Response(

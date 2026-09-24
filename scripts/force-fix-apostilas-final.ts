@@ -31,8 +31,8 @@ async function fix() {
       })
       .ilike('title', `%${subject}%`);
     
-    if (error) console.error(`Erro ao atualizar ${subject}:`, error.message);
-    else console.log(`Atualizado (ou verificado): ${subject}`);
+    if (error) console.error('Erro ao atualizar disciplina', { subject, error: error.message });
+    else console.log('Atualizado ou verificado', { subject });
   }
 
   // 2. Garantir que as páginas existam para essas apostilas

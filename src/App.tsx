@@ -9,9 +9,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { PageSkeleton } from '@/components/PageSkeleton';
-import { SplashScreen } from '@/components/SplashScreen';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { RANamePrompt } from '@/components/RANamePrompt';
 import { AdPopup } from '@/components/AdPopup';
 import { AdDraftPreviewOverlay } from '@/components/admin/AdDraftPreviewOverlay';
 import { EllaSidebar } from '@/components/ella/EllaSidebar';
@@ -37,6 +35,8 @@ const BibliotecaPage = lazy(() => import('@/pages/BibliotecaPage'));
 const PlayBooksPage = lazy(() => import('@/pages/PlayBooksPage'));
 const CoursesPage = lazy(() => import('@/pages/CoursesPage'));
 const JobsPage = lazy(() => import('@/pages/JobsPage'));
+const CareerHubPage = lazy(() => import('@/pages/CareerHubPage'));
+const EmployabilityPage = lazy(() => import('@/pages/EmployabilityPage'));
 const MaterialsPage = lazy(() => import('@/pages/MaterialsPage'));
 const VideoPlayerPage = lazy(() => import('@/pages/VideoPlayerPage'));
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
@@ -87,35 +87,15 @@ function useAdminCopyPatch() {
   }, [user]);
 }
 
+// Startup emergency patch: App is rendered immediately; recovery work is deferred to main.tsx.
 const AppContent = () => {
-  const [splashDone, setSplashDone] = React.useState(false);
-  const [showContent, setShowContent] = React.useState(false);
   useAdminCopyPatch();
   useBMCWidget();
 
-  // Mantém a identidade da callback para não reiniciar o timer do splash a cada render.
-  const handleSplashComplete = React.useCallback(() => {
-    setSplashDone(true);
-  }, []);
-
-  React.useEffect(() => {
-    if (splashDone) {
-      const timer = setTimeout(() => setShowContent(true), 50);
-      return () => clearTimeout(timer);
-    }
-  }, [splashDone]);
 
   return (
     <>
-      {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
-      
-      <div 
-        className={`transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
-        aria-hidden={!splashDone}
-      >
-        {splashDone && (
-          <>
-            <RANamePrompt />
+      <div className="opacity-100" aria-hidden={false}>
             <AdPopup />
             <AdDraftPreviewOverlay />
             <EllaSidebar />
@@ -151,6 +131,8 @@ const AppContent = () => {
                 <Route path="/livros" element={<ProtectedRoute><StudentAppShell><PlayBooksPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/cursos" element={<ProtectedRoute><StudentAppShell><CoursesPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/vagas" element={<JobsPage />} />
+                <Route path="/empregabilidade" element={<ProtectedRoute><StudentAppShell><EmployabilityPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/carreira" element={<ProtectedRoute><StudentAppShell><CareerHubPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/materiais" element={<ProtectedRoute><StudentAppShell><MaterialsPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/video/:id" element={<ProtectedRoute><StudentAppShell><VideoPlayerPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/calculadora" element={<ProtectedRoute><StudentAppShell><CalculadoraPage /></StudentAppShell></ProtectedRoute>} />
@@ -191,8 +173,6 @@ const AppContent = () => {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
-          </>
-        )}
       </div>
     </>
   );

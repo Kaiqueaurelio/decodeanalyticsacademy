@@ -174,6 +174,14 @@ function escapeHtml(s: string): string {
 
 function escapeAttr(s: string): string { return escapeHtml(s); }
 
+function safePdfUrl(raw: string): string {
+  const url = (raw || '').trim().replace(/\u0000/g, '');
+  if (/^(javascript|data|vbscript|file):/i.test(url)) return '#';
+  if (/^(https?:|mailto:|tel:|\/|#|\.)/i.test(url)) return url;
+  if (/^[\\w.-]+\.[a-z]{2,}(\/|$)/i.test(url)) return 'https://' + url;
+  return '#';
+}
+
 function formatDateForPdf(value: string): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
@@ -252,13 +260,16 @@ function renderMarkdownToHtml(raw: string, audioBucket: { label: string; url: st
 }
 
 function inlineMd(s: string): string {
-  return escapeHtml(s)
+  const escaped = escapeHtml(s)
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/__([^_]+)__/g, '<strong>$1</strong>')
     .replace(/(?<![*\w])\*([^*\n]+?)\*(?!\w)/g, '<em>$1</em>')
     .replace(/(?<![_\w])_([^_\n]+?)_(?!\w)/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code style="font-family: \'Courier New\', monospace; font-size: 12px; background: #f1f5f9; padding: 1px 4px; border-radius: 3px;">$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color: #00f0ff;">$1</a>');
+    .replace(/`([^`]+)`/g, '<code style="font-family: \'Courier New\', monospace; font-size: 12px; background: #f1f5f9; padding: 1px 4px; border-radius: 3px;">$1</code>');
+
+  return escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label: string, href: string) =>
+    '<a href="' + escapeAttr(safePdfUrl(href)) + '" style="color: #00f0ff;">' + label + '</a>',
+  );
 }
 
 export async function exportApostilaToPDF(opts: ExportOpts): Promise<void> {

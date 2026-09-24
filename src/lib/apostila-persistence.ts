@@ -21,105 +21,138 @@ export interface ApostilaPagePersistenceDraft {
   savedDate: string | null;
 }
 
-const TRANSIENT_ERROR_CODES = new Set(['FETCH_ERROR', 'PGRST301', '57014', '08000', '08003', '08006', '57P01']);
-
-function isTransientError(error: any) {
-  const code = String(error?.code ?? '').toUpperCase();
-  const message = String(error?.message ?? '').toLowerCase();
-  return TRANSIENT_ERROR_CODES.has(code)
-    || code.startsWith('08')
-    || message.includes('network')
-    || message.includes('fetch')
-    || message.includes('timeout')
-    || message.includes('temporarily unavailable')
-    || message.includes('connection reset');
-}
-
-async function confirmPersistedContent(
-  id: string,
-  draft: { title: string; content: string },
-  apostilaId?: string,
-) {
-  const table = apostilaId ? 'apostila_pages' : 'apostilas';
-  let query = supabase.from(table).select('id, title, content' + (apostilaId ? ', apostila_id' : '')).eq('id', id).maybeSingle();
-  if (apostilaId) query = query.eq('apostila_id', apostilaId) as any;
-  const { data, error } = await query;
-  if (error || !data) return false;
-  return data.id === id
-    && data.title === draft.title
-    && data.content === draft.content
-    && (!apostilaId || data.apostila_id === apostilaId);
-}
-
-async function runSaveWithRecovery<T extends { data: unknown; error: any }>(
-  saveOnce: () => Promise<T>,
-  id: string,
-  draft: { title: string; content: string },
-  apostilaId?: string,
-) {
-  let result = await saveOnce();
-  if (!result.error) return confirmSavedDraft(result, id, draft, apostilaId);
-
-  // An ambiguous network failure can mean that Postgres committed but the
-  // response never reached the browser. Verify before attempting another write.
-  if (await confirmPersistedContent(id, draft, apostilaId)) {
-    const { data } = await (apostilaId
-      ? supabase.from('apostila_pages').select('*').eq('id', id).eq('apostila_id', apostilaId).maybeSingle()
-      : supabase.from('apostilas').select('*').eq('id', id).maybeSingle());
-    return { ...result, data, error: null } as T;
-  }
-
-  if (String(result.error?.code ?? '') === '40001') return result;
-  if (!isTransientError(result.error)) return result;
-
-  for (const delayMs of [350, 900]) {
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
-    result = await saveOnce();
-    if (!result.error) return confirmSavedDraft(result, id, draft, apostilaId);
-    if (await confirmPersistedContent(id, draft, apostilaId)) {
-      const { data } = await (apostilaId
-        ? supabase.from('apostila_pages').select('*').eq('id', id).eq('apostila_id', apostilaId).maybeSingle()
-        : supabase.from('apostilas').select('*').eq('id', id).maybeSingle());
-      return { ...result, data, error: null } as T;
-    }
-    if (String(result.error?.code ?? '') === '40001') return result;
-    if (!isTransientError(result.error)) return result;
-  }
-  return result;
-}
-
 export async function saveApostilaWithRevision(draft: ApostilaPersistenceDraft) {
-  return runSaveWithRecovery(
-    () => supabase.rpc('save_apostila' as any, {
-      _apostila_id: draft.apostilaId,
-      _expected_revision: draft.expectedRevision,
-      _title: draft.title,
-      _category: draft.category,
-      _content: draft.content,
-      _published: draft.published,
-      _semester: draft.semester,
-      _course: draft.course,
-      _saved_date: draft.savedDate,
-    } as any),
-    draft.apostilaId,
-    draft,
-  );
+  const params = {
+    _apostila_id: draft.apostilaId,
+    _expected_revision: draft.expectedRevision,
+    _title: draft.title,
+    _category: draft.category,
+    _content: draft.content,
+    _published: draft.published,
+    _semester: draft.semester,
+    _course: draft.course,
+    _saved_date: draft.savedDate,
+  } as any;
+  let result = await supabase.rpc('save_apostila' as any, params);
+  if (isTransientSaveError(result.error)) {
+    // Um timeout do gateway não informa se a transação foi cancelada ou apenas
+    // se a resposta chegou tarde. Antes de repetir uma gravação com revisão,
+    // esperamos a confirmação de leitura: assim uma gravação que já ocorreu
+    // não vira um falso erro de "não salvo" no editor.
+    const confirmed = await waitForSavedApostila(draft);
+    if (confirmed) return confirmed;
+    // Uma única repetição com a mesma revisão é segura: se a primeira chamada
+    // tiver concluído após o timeout, o banco responderá conflito e faremos a
+    // leitura de confirmação; se não concluiu, esta chamada salva o rascunho.
+    result = await supabase.rpc('save_apostila' as any, params);
+    if (isRevisionConflict(result.error)) {
+      const savedAfterRetry = await waitForSavedApostila(draft);
+      if (savedAfterRetry) return savedAfterRetry;
+    }
+  }
+  return confirmSavedDraft(result, draft.apostilaId, draft);
+}
+
+/**
+ * A criação não é considerada concluída apenas porque a resposta do INSERT
+ * chegou. A leitura pelo mesmo cliente confirma que o registro e o conteúdo
+ * realmente ficaram visíveis antes de a interface anunciar sucesso.
+ */
+export async function confirmCreatedApostila(input: { id: string; title: string; content: string }) {
+  const { data, error } = await supabase
+    .from('apostilas')
+    .select('id, title, content')
+    .eq('id', input.id)
+    .maybeSingle();
+  if (error) return { data: null, error };
+  if (!data || data.title !== input.title || data.content !== input.content) {
+    return {
+      data: null,
+      error: {
+        code: 'CREATE_NOT_CONFIRMED',
+        message: 'O banco não confirmou a nova apostila. Ela não será exibida como salva.',
+        details: '',
+        hint: '',
+      },
+    };
+  }
+  return { data, error: null };
 }
 
 export async function saveApostilaPageWithRevision(draft: ApostilaPagePersistenceDraft) {
-  return runSaveWithRecovery(
-    () => supabase.rpc('save_apostila_page' as any, {
-      _page_id: draft.pageId,
-      _apostila_id: draft.apostilaId,
-      _expected_revision: draft.expectedRevision,
-      _title: draft.title,
-      _content: draft.content,
-      _saved_date: draft.savedDate,
-    } as any),
-    draft.pageId,
-    draft,
-    draft.apostilaId,
-  );
+  const params = {
+    _page_id: draft.pageId,
+    _apostila_id: draft.apostilaId,
+    _expected_revision: draft.expectedRevision,
+    _title: draft.title,
+    _content: draft.content,
+    _saved_date: draft.savedDate,
+  } as any;
+  let result = await supabase.rpc('save_apostila_page' as any, params);
+  if (isTransientSaveError(result.error)) {
+    const confirmed = await waitForSavedPage(draft);
+    if (confirmed) return confirmed;
+    result = await supabase.rpc('save_apostila_page' as any, params);
+    if (isRevisionConflict(result.error)) {
+      const savedAfterRetry = await waitForSavedPage(draft);
+      if (savedAfterRetry) return savedAfterRetry;
+    }
+  }
+  return confirmSavedDraft(result, draft.pageId, draft, draft.apostilaId);
+}
+
+function isTransientSaveError(error: any) {
+  const text = `${error?.code || ''} ${error?.message || ''}`.toLowerCase();
+  return /timeout|timed out|network|fetch failed|gateway/.test(text) || [502, 503, 504].includes(Number(error?.status));
+}
+
+function isRevisionConflict(error: any) {
+  return error?.code === '40001';
+}
+
+const SAVE_CONFIRMATION_DELAYS_MS = [0, 250, 750] as const;
+
+function wait(ms: number) {
+  return new Promise<void>((resolve) => globalThis.setTimeout(resolve, ms));
+}
+
+async function waitForSavedApostila(draft: ApostilaPersistenceDraft) {
+  for (const delay of SAVE_CONFIRMATION_DELAYS_MS) {
+    if (delay) await wait(delay);
+    const confirmed = await findSavedApostila(draft);
+    if (confirmed) return confirmed;
+  }
+  return null;
+}
+
+async function waitForSavedPage(draft: ApostilaPagePersistenceDraft) {
+  for (const delay of SAVE_CONFIRMATION_DELAYS_MS) {
+    if (delay) await wait(delay);
+    const confirmed = await findSavedPage(draft);
+    if (confirmed) return confirmed;
+  }
+  return null;
+}
+
+async function findSavedApostila(draft: ApostilaPersistenceDraft) {
+  const { data, error } = await supabase
+    .from('apostilas')
+    .select('id, title, content')
+    .eq('id', draft.apostilaId)
+    .maybeSingle();
+  if (error || !data || data.title !== draft.title || data.content !== draft.content) return null;
+  return { data: [data], error: null };
+}
+
+async function findSavedPage(draft: ApostilaPagePersistenceDraft) {
+  const { data, error } = await supabase
+    .from('apostila_pages')
+    .select('id, apostila_id, title, content')
+    .eq('id', draft.pageId)
+    .eq('apostila_id', draft.apostilaId)
+    .maybeSingle();
+  if (error || !data || data.title !== draft.title || data.content !== draft.content) return null;
+  return { data: [data], error: null };
 }
 
 function confirmSavedDraft<T extends { data: unknown; error: unknown }>(

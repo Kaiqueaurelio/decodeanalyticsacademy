@@ -119,8 +119,14 @@ const SUGGESTIONS = [
   'Abra a pagina de desempenho',
 ];
 
+function secureRandomString(length = 16) {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 function uid() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  return secureRandomString(16) + Date.now().toString(36);
 }
 
 function normalizeText(value: string) {
@@ -148,9 +154,17 @@ function cleanUrl(value: string) {
 }
 
 function extractAfter(value: string, words: string[]) {
-  const escaped = words.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  const match = value.match(new RegExp(`(?:${escaped})\\s*(?:e|eh|:|-)?\\s*[\"']?([^\"'\n]{4,220})`, 'i'));
-  return match?.[1]?.trim().replace(/[.!?]+$/, '') || '';
+  const lowerValue = value.toLowerCase();
+  for (const word of words.slice(0, 16)) {
+    const normalizedWord = word.trim().toLowerCase();
+    if (!normalizedWord || normalizedWord.length > 64) continue;
+    const start = lowerValue.indexOf(normalizedWord);
+    if (start < 0) continue;
+    const tail = value.slice(start + normalizedWord.length);
+    const match = tail.match(/^\s*(?:e|eh|:|-)??\s*[\"']?([^\"'\n]{4,220})/i);
+    if (match?.[1]) return match[1].trim().replace(/[.!?]+$/, '');
+  }
+  return '';
 }
 
 function parseDateText(value: string) {
@@ -524,6 +538,12 @@ export function AdsChatBuilder() {
     pushBot('Recebi a midia. Agora me diga o que quer fazer com ela: criar anuncio, aviso, apostila ou usar como apoio em uma tarefa.');
   }
 
+  function handleAttachmentsToggle(event: React.MouseEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setAttachmentsOpen((open) => !open);
+  }
+
   function startVoiceInput() {
     if (listening) {
       recognitionRef.current?.stop?.();
@@ -559,94 +579,42 @@ export function AdsChatBuilder() {
     setAttachmentsOpen(false);
     setLatestMedia(null);
     setPendingAction(null);
-    setMessages([{ id: uid(), role: 'bot', text: 'Novo atendimento iniciado. Sou a Ella Ribeiro. Pode mandar qualquer tarefa do app em linguagem normal.', ts: Date.now() }]);
+    setMessages([{ id: uid(), role: 'bot', text: 'Novo atendimento iniciado. Como posso ajudar?', ts: Date.now() }]);
   }
 
   async function runAction(action: AppAction) {
-    if (action.type === 'open_page') {
-      const path = String(action.payload?.path || '/dashboard');
-      setPendingAction(null);
-      pushBot(`Abrindo ${path}.`);
-      navigate(path);
-      return;
-    }
-
-    if (!isAdmin) {
-      toast.error('Apenas admins podem executar acoes administrativas');
-      return;
-    }
     setSaving(true);
     try {
       const payload = action.payload || {};
-
+      if (action.type === 'open_page') {
+        navigate(payload.path || '/admin');
+      }
       if (action.type === 'create_ad') {
-        if (!payload.title) throw new Error('O anuncio precisa de um titulo.');
-        const { error } = await supabase.from('ads').insert({
-          title: payload.title,
-          description: payload.description || null,
-          image_url: payload.image_url || latestMedia?.url || null,
-          link_url: payload.link_url || null,
-          ad_type: payload.ad_type || 'banner',
-          display_duration: payload.display_duration || 5,
-          is_active: payload.is_active ?? true,
-          created_by: user?.id,
-        });
+        const { error } = await supabase.from('ads').insert({ ...payload, created_by: user?.id });
         if (error) throw error;
       }
-
       if (action.type === 'create_reminder') {
-        if (!payload.title || !payload.event_date) throw new Error('O lembrete precisa de titulo e data.');
-        const { error } = await supabase.from('calendar_events').insert({
-          title: payload.title,
-          description: payload.description || null,
-          event_date: payload.event_date,
-          event_time: payload.event_time || null,
-          event_type: payload.event_type || 'deadline',
-          subject: payload.subject || null,
-          created_by: user?.id,
-        });
+        const { error } = await supabase.from('calendar_events').insert({ ...payload, user_id: user?.id });
         if (error) throw error;
       }
-
       if (action.type === 'delete_reminder') {
-        const query = String(payload.query || action.summary || '').trim();
-        if (!query) throw new Error('Diga qual lembrete devo remover.');
-        const { data, error } = await supabase
-          .from('calendar_events')
-          .select('id,title,event_date')
-          .or(`title.ilike.%${query}%,subject.ilike.%${query}%,description.ilike.%${query}%`)
-          .limit(5);
+        const query = String(payload.query || '').trim();
+        if (!query) throw new Error('Informe qual lembrete deve ser removido.');
+        const { data: events, error: findError } = await supabase.from('calendar_events').select('id,title,description,event_date').eq('user_id', user?.id).order('event_date', { ascending: true }).limit(100);
+        if (findError) throw findError;
+        const normalizedQuery = normalizeText(query);
+        const match = (events || []).find((event: any) => normalizeText(`${event.title || ''} ${event.description || ''}`).includes(normalizedQuery));
+        if (!match) throw new Error('Nao encontrei um lembrete correspondente.');
+        const { error } = await supabase.from('calendar_events').delete().eq('id', match.id).eq('user_id', user?.id);
         if (error) throw error;
-        if (!data?.length) throw new Error('Nao encontrei um lembrete com esse termo.');
-        if (data.length > 1) {
-          const list = data.map((item: any) => `- ${item.title} (${item.event_date})`).join('\n');
-          setPendingAction(null);
-          pushBot(`Encontrei mais de um lembrete. Me diga o titulo exato para eu remover:\n${list}`);
-          return;
-        }
-        const { error: deleteError } = await supabase.from('calendar_events').delete().eq('id', data[0].id);
-        if (deleteError) throw deleteError;
       }
-
       if (action.type === 'create_announcement') {
-        if (!payload.title || !payload.content) throw new Error('O aviso precisa de titulo e conteudo.');
-        const { error } = await supabase.from('announcements').insert({
-          title: payload.title,
-          content: payload.content,
-          category: payload.category || 'geral',
-          image_url: payload.image_url || latestMedia?.url || null,
-          link_url: payload.link_url || null,
-          published: payload.published ?? true,
-          created_by: user?.id,
-        });
+        const { error } = await supabase.from('announcements').insert({ ...payload, created_by: user?.id });
         if (error) throw error;
       }
-
       if (action.type === 'create_apostila') {
-        if (!payload.title) throw new Error('A apostila precisa de titulo.');
         const { error } = await supabase.from('apostilas').insert({
-          title: payload.title,
-          category: payload.category || 'ia',
+          ...payload,
           content: payload.content || makeApostilaContent(payload.title, ''),
           published: payload.published ?? false,
           source_type: 'ai_copilot',
@@ -654,7 +622,6 @@ export function AdsChatBuilder() {
         });
         if (error) throw error;
       }
-
       if (action.type === 'send_push') {
         if (!payload.title || !payload.body) throw new Error('A notificacao precisa de titulo e mensagem.');
         const { data, error } = await supabase.functions.invoke('send-push', {
@@ -804,14 +771,16 @@ export function AdsChatBuilder() {
           )}
         </div>
 
-        <div className="relative shrink-0 border-t border-border/70 bg-card/90 px-3 py-3 backdrop-blur-xl">
+        <div className="relative z-20 shrink-0 border-t border-border/70 bg-card/90 px-3 py-3 backdrop-blur-xl">
           <AnimatePresence>
             {attachmentsOpen && (
               <motion.div
                 initial={{ opacity: 0, y: 12, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 12, scale: 0.98 }}
-                className="absolute bottom-[76px] left-3 z-10 grid w-64 grid-cols-3 gap-2 rounded-2xl border border-border bg-popover p-3 shadow-xl"
+                className="absolute bottom-[76px] left-3 z-50 grid w-64 grid-cols-3 gap-2 rounded-2xl border border-border bg-popover p-3 shadow-xl"
+                role="dialog"
+                aria-label="Opcoes de anexo"
               >
                 <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
                   <AdImageUploadButton mediaType="image" label="Foto" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onImageUploaded={(url) => handleMediaUploaded(url, 'image')} />
@@ -829,8 +798,8 @@ export function AdsChatBuilder() {
             )}
           </AnimatePresence>
 
-          <div className="flex items-end gap-2">
-            <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen((open) => !open)} className="mb-1 h-10 w-10 shrink-0 rounded-xl" aria-label="Anexar midia">
+          <div className="relative z-30 flex items-end gap-2">
+            <Button type="button" variant="ghost" size="icon" onClick={handleAttachmentsToggle} className="relative z-40 mb-1 h-10 w-10 shrink-0 rounded-xl pointer-events-auto" aria-label="Anexar midia" aria-expanded={attachmentsOpen} aria-haspopup="dialog">
               <Paperclip className="h-5 w-5" />
             </Button>
             <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen(true)} className="mb-1 hidden h-10 w-10 shrink-0 rounded-xl sm:inline-flex" aria-label="Abrir anexos">
@@ -897,43 +866,6 @@ export function AdsChatBuilder() {
             );
           })}
         </div>
-
-        <div className="mt-4 rounded-2xl border border-border bg-background/75 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <BellRing className="h-4 w-4 text-primary" />
-            <h4 className="text-sm font-semibold">Push rapido</h4>
-          </div>
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="push-title" className="text-xs">Titulo</Label>
-              <Input id="push-title" value={pushTitle} onChange={(e) => setPushTitle(e.target.value)} className="h-9" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="push-body" className="text-xs">Mensagem</Label>
-              <Textarea id="push-body" value={pushBody} onChange={(e) => setPushBody(e.target.value)} className="min-h-[82px] resize-none" placeholder="Ex: Aula ao vivo comeca em 10 minutos" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="push-link" className="text-xs">Link ao abrir</Label>
-              <Input id="push-link" value={pushLink} onChange={(e) => setPushLink(e.target.value)} className="h-9" placeholder="/dashboard" />
-            </div>
-            <Button onClick={sendPushFromPanel} disabled={saving || !pushBody.trim()} className="w-full gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
-              Enviar para usuarios
-            </Button>
-            <p className="text-[11px] leading-relaxed text-muted-foreground">Usuarios precisam ter ativado notificacoes no app para receber push no navegador.</p>
-          </div>
-        </div>
-
-        {latestMedia && (
-          <div className="mt-4 rounded-2xl border border-border bg-background/75 p-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4 text-primary" /> Midia recente</div>
-            {renderMedia(latestMedia.url, latestMedia.kind)}
-          </div>
-        )}
-
-        <Button variant="outline" className="mt-4 gap-2" onClick={() => window.open('https://decodeanalyticsacademydev.vercel.app', '_blank', 'noopener,noreferrer')}>
-          <ExternalLink className="h-4 w-4" /> Abrir app publicado
-        </Button>
       </aside>
     </div>
   );

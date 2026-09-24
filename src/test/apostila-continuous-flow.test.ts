@@ -7,7 +7,8 @@ const rendererSource = readFileSync(resolve(process.cwd(), 'src/components/Apost
 describe('fluxo contínuo da apostila', () => {
   it('renderiza as páginas salvas dentro de um único contêiner de leitura', () => {
     expect(source).toContain('data-apostila-continuous-flow="true"');
-    expect(source).toContain('organizedContentBlocks.map((block, blockIndex) => (');
+    expect(source).toContain('contentBlocks.map((block, blockIndex) => (');
+    expect(source).toContain('<ApostilaContentBoundary content={block.content} />');
     expect(source).toContain('data-apostila-page-id={block.id}');
   });
 

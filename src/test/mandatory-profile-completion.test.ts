@@ -1,22 +1,59 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const source = readFileSync(resolve(process.cwd(), 'src/components/RANamePrompt.tsx'), 'utf8');
+const srcRoot = resolve(process.cwd(), 'src');
+const appSource = readFileSync(resolve(srcRoot, 'App.tsx'), 'utf8');
+const dashboardSource = readFileSync(resolve(srcRoot, 'pages/DashboardPage.tsx'), 'utf8');
+const protectedRouteSource = readFileSync(resolve(srcRoot, 'components/ProtectedRoute.tsx'), 'utf8');
 
-describe('mandatory profile completion', () => {
-  it('does not allow students to dismiss incomplete identity data', () => {
-    expect(source).not.toContain('Lembrar depois');
-    expect(source).not.toContain('ra_name_prompt_dismissed');
-    expect(source).toContain('onEscapeKeyDown={(event) => event.preventDefault()}');
-    expect(source).toContain('onPointerDownOutside={(event) => event.preventDefault()}');
+function collectSourceFiles(dir: string): string[] {
+  const files: string[] = [];
+  for (const entry of readdirSync(dir)) {
+    const fullPath = resolve(dir, entry);
+    if (entry === 'test' || entry === '__tests__') continue;
+    if (statSync(fullPath).isDirectory()) {
+      files.push(...collectSourceFiles(fullPath));
+    } else if (/\.(ts|tsx)$/.test(entry)) {
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
+describe('optional profile completion', () => {
+  it('removes the obsolete profile prompt component entirely', () => {
+    expect(existsSync(resolve(srcRoot, 'components/RANamePrompt.tsx'))).toBe(false);
   });
 
-  it('requires a valid full name and a verified recovery email for RA accounts', () => {
-    expect(source).toContain('normalizedName.split(" ").length >= 2');
-    expect(source).toContain('supabase.auth.updateUser({ email: recoveryEmail })');
-    expect(source).toContain('authStillUsesSyntheticEmail');
-    expect(source).toContain('Já confirmei meu e-mail');
-    expect(source).toContain('supabase.auth.refreshSession()');
+  it('keeps profile completion outside authentication and route guards', () => {
+    expect(appSource).not.toContain('RANamePrompt');
+    expect(dashboardSource).not.toContain('data-ra-prompt-trigger');
+    expect(dashboardSource).not.toContain('Perfil Incompleto');
+    expect(protectedRouteSource).not.toContain('full_name');
+    expect(protectedRouteSource).not.toContain('profile.email');
+    expect(protectedRouteSource).not.toContain('RANamePrompt');
+  });
+
+  it('contains no remaining mandatory-profile UI or trigger anywhere in application source', () => {
+    // Scan application code, excluding test fixtures that intentionally name the forbidden markers.
+    const forbidden = [
+      'RANamePrompt',
+      'data-ra-prompt-trigger',
+      'Complete seu perfil',
+      'Perfil Incompleto',
+      'perfil incompleto',
+    ];
+
+    const violations = collectSourceFiles(srcRoot)
+      .filter((filePath) => !filePath.endsWith('mandatory-profile-completion.test.ts'))
+      .flatMap((filePath) => {
+        const source = readFileSync(filePath, 'utf8');
+        return forbidden
+          .filter((marker) => source.includes(marker))
+          .map((marker) => ({ file: filePath.replace(srcRoot, 'src'), marker }));
+      });
+
+    expect(violations).toEqual([]);
   });
 });

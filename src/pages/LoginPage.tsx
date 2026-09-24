@@ -379,8 +379,7 @@ export default function LoginPage() {
       authResult.status !== 429 &&
       (authResult.status === 503 ||
         authResult.status === 408 ||
-        authResult.status === 0 ||
-        (authResult.status === 401 && (isEmail || isValidRa(normalizedRa) || normalizedRa === 'G802144')));
+        authResult.status === 0);
 
     if (canUseDirectAuthFallback) {
       const fallbackEmail = isEmail

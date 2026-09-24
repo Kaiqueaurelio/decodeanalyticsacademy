@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -136,6 +138,13 @@ export default function ExercisesPage() {
     }, 150);
   };
 
+  // Depois de mostrar o feedback, avança automaticamente para a próxima
+  // questão. A última questão permanece na tela para o resumo aparecer.
+  const advanceAfterAnswer = useCallback(() => {
+    if (currentIndex >= exercises.length - 1) return;
+    window.setTimeout(() => navigateQuestion('next'), 3500);
+  }, [currentIndex, exercises.length, navigateQuestion]);
+
   const handleAnswer = async (exerciseId: string, selected: string) => {
     if (!user || answers[exerciseId]) return;
 
@@ -162,9 +171,7 @@ export default function ExercisesPage() {
       toast.error('Incorreto +3 XP', { duration: 2000 });
     }
 
-    if (timedMode && currentIndex < exercises.length - 1) {
-      setTimeout(() => navigateQuestion('next'), 1000);
-    }
+    advanceAfterAnswer();
   };
 
   const handleEssaySubmit = (exerciseId: string) => {
@@ -191,6 +198,7 @@ export default function ExercisesPage() {
     gamification.addXP(15);
     gamification.updateStreak();
     toast.success('Dissertativa enviada. +15 XP');
+    advanceAfterAnswer();
   };
 
   const toggleModelAnswer = (exerciseId: string) => {
@@ -260,14 +268,14 @@ export default function ExercisesPage() {
         <div className="fixed inset-0 pointer-events-none z-50">
           {[...Array(50)].map((_, i) => (
             <div key={i} className="absolute animate-confetti" style={{
-              left: `${Math.random() * 100}%`,
+              left: `${secureRandom() * 100}%`,
               top: '-10px',
-              animationDelay: `${Math.random() * 2}s`,
-              animationDuration: `${2 + Math.random() * 3}s`,
-              backgroundColor: ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--accent))'][Math.floor(Math.random() * 4)],
-              width: `${6 + Math.random() * 6}px`,
-              height: `${6 + Math.random() * 6}px`,
-              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+              animationDelay: `${secureRandom() * 2}s`,
+              animationDuration: `${2 + secureRandom() * 3}s`,
+              backgroundColor: ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--accent))'][Math.floor(secureRandom() * 4)],
+              width: `${6 + secureRandom() * 6}px`,
+              height: `${6 + secureRandom() * 6}px`,
+              borderRadius: secureRandom() > 0.5 ? '50%' : '2px',
             }} />
           ))}
         </div>
@@ -724,7 +732,7 @@ export default function ExercisesPage() {
                         <div className="mt-4 p-4 rounded-xl bg-accent/10 border border-accent/20 animate-fade-in">
                           <p className="font-semibold text-xs text-accent mb-1.5 flex items-center gap-1">
                             <Wand2 className="h-3 w-3" />
-                            {type === 'essay' ? 'Resposta Modelo' : 'Explicação'}
+                            {type === 'essay' ? 'Resposta Modelo' : answered.correct ? 'Por que você acertou' : 'Por que você errou'}
                           </p>
                           <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{reveals[currentExercise.id]?.explanation || reveals[currentExercise.id]?.reference_answer}</p>
                         </div>

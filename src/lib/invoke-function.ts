@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, supabase } from "@/integrations/supabase/client";
 import { getCurrentAccessToken } from "@/lib/auth-session";
 import { toast } from "sonner";
 
@@ -24,7 +24,7 @@ export interface InvokeError {
   bodyText: string | null;
 }
 
-const FUNCTIONS_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const FUNCTIONS_BASE = `${SUPABASE_URL}/functions/v1`;
 
 /**
  * Wrapper around supabase.functions.invoke that surfaces HTTP status,
@@ -49,7 +49,7 @@ export async function invokeFunction<T = unknown>(
 
     const reqHeaders: Record<string, string> = {
       "Content-Type": "application/json",
-      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      apikey: SUPABASE_PUBLISHABLE_KEY,
       ...(accessToken
         ? { Authorization: `Bearer ${accessToken}` }
         : {}),
@@ -96,7 +96,7 @@ export async function invokeFunction<T = unknown>(
         });
       }
       // eslint-disable-next-line no-console
-      console.error(`[invokeFunction] ${name} failed`, err);
+      console.error('[invokeFunction] function failed', { name, error: err });
       return { data: null, error: err };
     }
 
@@ -116,7 +116,7 @@ export async function invokeFunction<T = unknown>(
       });
     }
     // eslint-disable-next-line no-console
-    console.error(`[invokeFunction] ${name} network error`, e);
+    console.error('[invokeFunction] network error', { name, error: e });
     return { data: null, error: err };
   }
 }

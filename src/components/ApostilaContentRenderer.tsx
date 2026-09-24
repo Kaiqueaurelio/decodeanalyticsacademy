@@ -206,8 +206,14 @@ const AUDIO_PLAYER_TAG_RE = /<audio-player\b([^>]*)\/?\s*>/i;
 type ParsedAudioPlayer = { label: string; url: string };
 
 function readTagAttribute(attrs: string, name: string): string {
-  const match = attrs.match(new RegExp(`${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
-  return (match?.[1] ?? match?.[2] ?? '').trim();
+  const wanted = name.trim().toLowerCase();
+  if (!wanted || wanted.length > 64) return '';
+  const attributeRe = /([A-Za-z0-9_-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
+  let match: RegExpExecArray | null;
+  while ((match = attributeRe.exec(attrs)) !== null) {
+    if (match[1].toLowerCase() === wanted) return (match[2] ?? match[3] ?? '').trim();
+  }
+  return '';
 }
 
 function parseAudioPlayerTag(input: string): ParsedAudioPlayer | null {
@@ -431,7 +437,29 @@ function normalizeHtmlTableMarkup(fragment: string): string {
   if (/^<table\b/i.test(trimmed)) return trimmed;
   if (/^<(?:thead|tbody)\b/i.test(trimmed)) return `<table>${trimmed}</table>`;
   if (/^<tr\b/i.test(trimmed)) return `<table><tbody>${trimmed}</tbody></table>`;
+  if (/^<(?:th|td)\b/i.test(trimmed)) return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
   return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
+}
+
+function countHtmlTableCells(markup: string): number {
+  return (markup.match(/<(?:td|th)\b/gi) || []).length;
+}
+
+function hasHtmlTableMarkup(markup: string): boolean {
+  return /<(?:table|thead|tbody|tr|th|td)\b/i.test(markup);
+}
+
+function extractHtmlTableFragments(text: string, token: (index: number) => string, htmlTables: string[]): string {
+  const capture = (markup: string) => `\n${token(htmlTables.push(markup) - 1)}\n`;
+
+  // Alguns importadores preservam apenas um trecho de tabela. Extraímos do
+  // maior para o menor para evitar que <td>/<tr> internos sejam processados
+  // duas vezes. Cada fragmento será envolvido por normalizeHtmlTableMarkup.
+  return text
+    .replace(/<table\b[\s\S]*?<\/table\s*>/gi, capture)
+    .replace(/<(thead|tbody)\b[\s\S]*?<\/\1\s*>/gi, capture)
+    .replace(/<tr\b[\s\S]*?<\/tr\s*>(?:\s*<tr\b[\s\S]*?<\/tr\s*>)*/gi, capture)
+    .replace(/<(td|th)\b[\s\S]*?<\/\1\s*>(?:\s*<(td|th)\b[\s\S]*?<\/\2\s*>)*/gi, capture);
 }
 
 /** Quebra o conteúdo de uma seção em blocos tipados. */
@@ -441,10 +469,7 @@ function parseBlocks(rawInput: string): Block[] {
   const raw = wrapInferredCodeBlocks(normalizeMarkdownEscapes(rawInput));
   const htmlTables: string[] = [];
   const tableToken = (index: number) => `${HTML_TABLE_TOKEN_PREFIX}${index}__`;
-  const extractHtmlTables = (text: string) => text.replace(
-    /<table\b[\s\S]*?<\/table\s*>/gi,
-    (table) => `\n${tableToken(htmlTables.push(table) - 1)}\n`,
-  );
+  const extractHtmlTables = (text: string) => extractHtmlTableFragments(text, tableToken, htmlTables);
 
   // 1) Extrai blocos de código triplos
   const codeRe = /```(\w+)?\n?([\s\S]*?)```/g;
@@ -560,8 +585,14 @@ function parseBlocks(rawInput: string): Block[] {
       if (htmlImgMatch) {
         const attrsStr = htmlImgMatch[1];
         const get = (name: string) => {
-          const m = attrsStr.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, 'i'));
-          return m ? m[1] : '';
+          const wanted = name.trim().toLowerCase();
+          if (!wanted || wanted.length > 64) return '';
+          const attributeRe = /([A-Za-z0-9_-]+)\s*=\s*"([^"]*)"/gi;
+          let match: RegExpExecArray | null;
+          while ((match = attributeRe.exec(attrsStr)) !== null) {
+            if (match[1].toLowerCase() === wanted) return match[2];
+          }
+          return '';
         };
         const url = get('src');
         if (url) {
@@ -978,17 +1009,44 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
 }
 
 function HtmlTableBlock({ html }: { html: string }) {
+  const safeHtml = sanitizeHtml(normalizeHtmlTableMarkup(html));
+  const hasCells = /<(?:th|td)\b/i.test(safeHtml);
+
+  if (!hasCells) {
+    const fallbackText = html
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    console.warn('[ApostilaContentRenderer] Tabela sem células após sanitização; exibindo fallback seguro.', {
+      sourceLength: html.length,
+    });
+
+    return (
+      <section className="my-8 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-foreground/85" role="status">
+        <p className="mb-2 font-semibold text-amber-700 dark:text-amber-300">Não foi possível formatar esta tabela.</p>
+        <p className="whitespace-pre-wrap">{fallbackText || 'O conteúdo da tabela está indisponível.'}</p>
+      </section>
+    );
+  }
+
   return (
     <div
       className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm"
-      dangerouslySetInnerHTML={{ __html: sanitizeHtml(normalizeHtmlTableMarkup(html)) }}
+      data-apostila-table-source="html"
+      data-apostila-table-cells={String(countHtmlTableCells(safeHtml))}
+      dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );
 }
 
 function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
   return (
-    <div className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm">
+    <div
+      className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm"
+      data-apostila-table-source="markdown"
+      data-apostila-table-cells={String(header.length + rows.reduce((total, row) => total + row.length, 0))}
+    >
       <table className="w-full text-[15px] border-collapse">
 
         <thead>
@@ -1177,6 +1235,47 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
     () => blocks.findIndex((b) => b.type === 'paragraph' && b.content.trim().length > 80),
     [blocks]
   );
+
+  // Diagnóstico compartilhado do fluxo de renderização: as duas páginas de leitura
+  // passam por este renderer. Se o conteúdo clonado trouxer <td>/<th> e a tabela
+  // desaparecer, deixamos evidência objetiva no console em vez de falhar em silêncio.
+  useEffect(() => {
+    if (!hasHtmlTableMarkup(content)) return;
+
+    const sourceCellCount = countHtmlTableCells(content);
+    const htmlTableBlocks = blocks.filter((block) => block.type === 'html-table');
+    const markdownTableBlocks = blocks.filter((block) => block.type === 'table');
+    const parsedHtmlCellCount = htmlTableBlocks.reduce(
+      (total, block) => total + countHtmlTableCells(block.type === 'html-table' ? block.html : ''),
+      0,
+    );
+
+    if (htmlTableBlocks.length === 0 && markdownTableBlocks.length === 0) {
+      console.warn('[ApostilaContentRenderer] Conteúdo contém markup de tabela, mas nenhum bloco de tabela foi criado.', {
+        contentLength: content.length,
+        sourceCellCount,
+        preview: content.slice(0, 240),
+      });
+      return;
+    }
+
+    if (sourceCellCount > 0 && parsedHtmlCellCount === 0 && htmlTableBlocks.length > 0) {
+      console.warn('[ApostilaContentRenderer] Bloco de tabela criado sem células após a normalização.', {
+        contentLength: content.length,
+        sourceCellCount,
+        htmlTableBlocks: htmlTableBlocks.length,
+        parsedHtmlCellCount,
+      });
+      return;
+    }
+
+    console.debug('[ApostilaContentRenderer] Tabela detectada e preparada para renderização.', {
+      sourceCellCount,
+      parsedHtmlCellCount,
+      htmlTableBlocks: htmlTableBlocks.length,
+      markdownTableBlocks: markdownTableBlocks.length,
+    });
+  }, [content, blocks]);
 
   /**
    * Constrói o sumário a partir dos headings, atribuindo ids únicos

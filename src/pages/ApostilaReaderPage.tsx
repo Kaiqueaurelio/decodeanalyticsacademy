@@ -156,7 +156,7 @@ function buildTreeFromPages(apostilaId: string, pages: ApostilaPageRow[], pagePr
   };
 }
 
-function shouldRestoreRootContent(
+export function shouldRestoreRootContent(
   mainContent: string,
   savedPages: ApostilaPageRow[],
   treeLessonContents: string[] = [],
@@ -169,18 +169,16 @@ function shouldRestoreRootContent(
     ...treeLessonContents,
   ];
 
-  const pageContentChars = existingContents.reduce((total, content) => total + content.trim().length, 0);
-  const hasUsablePage = existingContents.some(
-    (content) => !isPlaceholderPageContent(content) && content.trim().length > 300,
-  );
   const rootIsAlreadyRepresented = existingContents.some((content) => {
     const normalized = normalizeContentForComparison(content);
     return normalized === normalizedMain || normalized.includes(normalizedMain);
   });
 
-  // Algumas migrações deixaram apenas páginas-placeholder/trechos mínimos, embora
-  // o conteúdo completo ainda esteja no campo apostilas.content.
-  return !rootIsAlreadyRepresented && (!hasUsablePage || pageContentChars < mainContent.length * 0.25);
+  // Páginas parciais nunca devem esconder o material integral. O limiar antigo
+  // de 25% fazia uma apostila recém-importada parecer incompleta quando algumas
+  // páginas já haviam sido criadas no editor. Só omitimos a raiz se ela já está
+  // integralmente presente em uma página ou lição estruturada.
+  return !rootIsAlreadyRepresented;
 }
 
 export function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[], pageProgress: ApostilaPageProgress = {}): Tree {

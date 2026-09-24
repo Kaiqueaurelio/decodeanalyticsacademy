@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 /**
  * RibbonImageButton — botão de upload de imagem com visual nativo do
  * ribbon Word (classe .word-btn-tall).
@@ -71,7 +73,7 @@ export function RibbonImageButton({ onImageInserted, label = 'Imagem' }: Props) 
     try {
       const file = await compressIfNeeded(rawFile);
       const ext = file.name.split('.').pop() || 'png';
-      const path = `apostila-images/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `apostila-images/${Date.now()}-${secureRandom().toString(36).slice(2)}.${ext}`;
 
       const { error } = await supabase.storage.from('materials').upload(path, file, {
         cacheControl: '3600',

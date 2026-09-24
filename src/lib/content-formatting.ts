@@ -68,9 +68,17 @@ export function isEffectivelySameContent(first: string, second: string): boolean
 }
 
 /**
- * Detecta cópias exatas ou quase exatas sem confundir um resumo curto com a
- * apostila completa. A antiga comparação por simples `includes` escondia uma
- * página inteira quando ela continha apenas um pequeno trecho já estruturado.
+ * Detecta somente duplicações seguras.
+ *
+ * REGRA DE INTEGRIDADE:
+ * - conteúdo normalizado exatamente igual -> duplicado;
+ * - um conteúdo inteiro está contido no outro -> o menor é uma cópia completa
+ *   do maior e pode ser omitido com segurança;
+ * - qualquer outra semelhança -> NÃO é duplicado.
+ *
+ * Não usamos mais similaridade por shingles/percentual. Isso evita que uma
+ * página grande que compartilha muitos parágrafos com outra página seja
+ * descartada quando ainda contém material novo.
  */
 export function isSubstantialDuplicateContent(first: string, second: string): boolean {
   const left = normalizeContentForComparison(first);
@@ -80,39 +88,8 @@ export function isSubstantialDuplicateContent(first: string, second: string): bo
 
   const shorter = left.length <= right.length ? left : right;
   const longer = left.length > right.length ? left : right;
-  const coverage = shorter.length / longer.length;
 
-  if (coverage >= 0.9 && longer.includes(shorter)) return true;
-
-  // Conteúdos longos importados pelo editor podem voltar com parágrafos
-  // reordenados, títulos extras ou outra pontuação. Nesses casos, comparar só
-  // por `includes` faz o leitor renderizar a apostila principal e a cópia da
-  // página logo abaixo. Shingles preservam a ordem local e reconhecem a cópia
-  // sem tratar um resumo curto como se fosse a apostila completa.
-  if (shorter.length < 800) return false;
-  if (longer.includes(shorter)) return true;
-
-  const makeShingles = (content: string, size = 8, stride = 1) => {
-    const words = content.split(' ').filter(Boolean);
-    const shingles = new Set<string>();
-    for (let index = 0; index <= words.length - size; index += stride) {
-      shingles.add(words.slice(index, index + size).join(' '));
-    }
-    return shingles;
-  };
-
-  const shorterWordCount = shorter.split(' ').length;
-  const shortStride = Math.max(1, Math.ceil(shorterWordCount / 2500));
-  const shortShingles = makeShingles(shorter, 8, shortStride);
-  const longShingles = makeShingles(longer);
-  if (shortShingles.size === 0 || longShingles.size === 0) return false;
-
-  let matchingShingles = 0;
-  shortShingles.forEach((shingle) => {
-    if (longShingles.has(shingle)) matchingShingles += 1;
-  });
-
-  return matchingShingles / shortShingles.size >= 0.78;
+  return longer.includes(shorter);
 }
 
 export function mergeDistinctPages<T extends { content?: string; id: string }>(pages: T[]): T[] {

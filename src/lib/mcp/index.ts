@@ -9,7 +9,7 @@ import createFlashcard from "./tools/create-flashcard";
 import myProgress from "./tools/my-progress";
 
 // Direct Supabase issuer built from the project ref (import-safe).
-const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
+const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "wxkkpjpqyrygglbuogsd";
 
 export default defineMcp({
   name: "decode-analytics-mcp",

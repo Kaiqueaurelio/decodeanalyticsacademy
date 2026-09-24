@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { supabase } from '@/integrations/supabase/client';
 import type { ChronologyValidationReport } from './apostila-pages';
 
@@ -26,7 +28,7 @@ export interface ChronologyValidationResult extends ChronologyValidationReport {
 function newOperationId() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto
     ? crypto.randomUUID()
-    : `operation-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    : `operation-${Date.now()}-${secureRandom().toString(16).slice(2)}`;
 }
 
 /**

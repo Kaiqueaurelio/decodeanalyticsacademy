@@ -51,24 +51,12 @@ export function AdminUserManagement() {
   const updateRole = async (userId: string, newRole: string) => {
     setUpdatingId(userId);
     try {
-      // Deletar roles existentes
-      await supabase.from('user_roles').delete().eq('user_id', userId);
-      
-      // Se for admin, inserir
-      if (newRole === 'admin') {
-        const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' } as any);
-        if (error) throw error;
-      }
-
-      // Registrar a ação por RPC: o banco fixa o admin autenticado e impede
-      // falsificação de admin_id, ação ou usuário-alvo.
-      const { error: auditError } = await (supabase.rpc as any)('log_admin_audit', {
-        _action: `update_role_${newRole}`,
+      const { error } = await (supabase.rpc as any)('admin_update_user_role', {
         _target_user_id: userId,
-        _details: { newRole },
+        _new_role: newRole,
       });
-      if (auditError) throw auditError;
-      
+      if (error) throw error;
+
       toast.success('Permissão atualizada com sucesso');
       fetchUsers();
     } catch (error: any) {

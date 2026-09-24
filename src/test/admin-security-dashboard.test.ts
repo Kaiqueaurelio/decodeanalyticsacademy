@@ -43,11 +43,17 @@ describe('admin security copy and dashboard contract guards', () => {
     expect(app).toContain('<Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />');
   });
 
-  it('waits for role verification and redirects non-admin users', () => {
+  it('waits for role verification only on administrative routes and redirects non-admin users', () => {
     const guard = source('src/components/ProtectedRoute.tsx');
-    expect(guard).toContain('(user && !roleChecked)');
+    expect(guard).toContain('(adminOnly && user && !roleChecked)');
     expect(guard).toContain('if (!isAdmin) return <Navigate to="/dashboard" replace />;');
     expect(guard).toContain('if (isBlocked)');
+  });
+
+  it('releases a suspended role lookup instead of leaving the app loading forever', () => {
+    const auth = source('src/hooks/useAuth.tsx');
+    expect(auth).toContain("const ROLE_CHECK_TIMEOUT_MS = 8_000;");
+    expect(auth).toContain("new Error('role_check_timeout')");
   });
 
   it('keeps Dashboard RPC responses on the generated Json contract', () => {

@@ -13,9 +13,10 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { BriefcaseBusiness, Building2, CheckCircle2, ExternalLink, Filter, Globe2, Loader2, MapPin, Search, Sparkles, WalletCards } from 'lucide-react';
+import { BriefcaseBusiness, Building2, CheckCircle2, ExternalLink, Filter, Globe2, Loader2, Mail, MapPin, Search, Sparkles, WalletCards } from 'lucide-react';
 
 type JobType = 'job' | 'internship' | 'freelance';
+type TimeFilter = 'all' | 'morning' | 'afternoon' | 'night';
 type Job = {
   id: string;
   title: string;
@@ -29,6 +30,11 @@ type Job = {
   application_link: string | null;
   is_active: boolean;
   published_at: string | null;
+  application_email: string | null;
+  application_method: string | null;
+  application_instructions: string | null;
+  openings_count: number | null;
+  candidates_count: number | null;
 };
 
 const JOB_TYPE_LABELS: Record<JobType, string> = {
@@ -36,6 +42,26 @@ const JOB_TYPE_LABELS: Record<JobType, string> = {
   internship: 'Estágio',
   freelance: 'Freelance',
 };
+
+function getJobTimePeriods(job: Job): TimeFilter[] {
+  const text = `${job.title} ${job.description} ${job.requirements || ''}`.toLowerCase();
+  const periods = new Set<TimeFilter>();
+  if (/manh[ãa]|matutino|matutina|pela manhã|per[ií]odo da manh[ãa]/i.test(text)) periods.add('morning');
+  if (/tarde|vespertino|vespertina|per[ií]odo da tarde/i.test(text)) periods.add('afternoon');
+  if (/noite|noturno|noturna|per[ií]odo noturno/i.test(text)) periods.add('night');
+
+  const rangeRegex = /(\d{1,2})(?::|h)?(\d{2})?\s*(?:às|a|-|até)\s*(\d{1,2})(?::|h)?(\d{2})?/gi;
+  for (const match of text.matchAll(rangeRegex)) {
+    const start = Number(match[1]);
+    const end = Number(match[3]);
+    if (Number.isNaN(start) || Number.isNaN(end)) continue;
+    if (start < 12 || (start >= 12 && end > start && end <= 18 && start < 15)) periods.add('morning');
+    if ((start >= 12 && start < 18) || (end > 12 && end <= 18)) periods.add('afternoon');
+    if (start >= 18 || end >= 18) periods.add('night');
+  }
+
+  return [...periods];
+}
 
 function isValidApplicationUrl(value: string | null | undefined): boolean {
   if (!value) return false;
@@ -54,13 +80,14 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | JobType>('all');
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [selected, setSelected] = useState<Job | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     (async () => {
-      const publicFields = 'id,title,company_name,company_logo_url,description,requirements,location,type,salary_range,is_active,published_at';
+      const publicFields = 'id,title,company_name,company_logo_url,description,requirements,location,type,salary_range,is_active,published_at,application_email,application_method,application_instructions,openings_count,candidates_count';
       const authenticatedFields = `${publicFields},application_link`;
       const result = user
         ? await (supabase as any)
@@ -91,9 +118,11 @@ export default function JobsPage() {
     const normalizedQuery = query.trim().toLowerCase();
     return jobs.filter((job) => {
       const searchable = `${job.title} ${job.company_name} ${job.description} ${job.requirements || ''} ${job.location || ''}`.toLowerCase();
-      return (!normalizedQuery || searchable.includes(normalizedQuery)) && (typeFilter === 'all' || job.type === typeFilter);
+      const matchesType = typeFilter === 'all' || job.type === typeFilter;
+      const matchesTime = timeFilter === 'all' || getJobTimePeriods(job).includes(timeFilter);
+      return (!normalizedQuery || searchable.includes(normalizedQuery)) && matchesType && matchesTime;
     });
-  }, [jobs, query, typeFilter]);
+  }, [jobs, query, typeFilter, timeFilter]);
 
   const requireLogin = (action: 'details' | 'application') => {
     toast.info(action === 'details' ? 'Entre para ver os detalhes completos' : 'Entre para se candidatar', {
@@ -103,6 +132,19 @@ export default function JobsPage() {
         onClick: () => navigate('/login', { state: { from: '/vagas', intendedAction: action } }),
       },
     });
+  };
+
+  const openEmailApplication = (job: Job) => {
+    if (!user) {
+      requireLogin('application');
+      return;
+    }
+    if (!job.application_email) {
+      toast.error('Esta vaga não possui candidatura por e-mail informada.');
+      return;
+    }
+    const subject = encodeURIComponent(`Candidatura - ${job.title}`);
+    window.location.href = `mailto:${job.application_email}?subject=${subject}`;
   };
 
   const openApplication = (job: Job) => {
@@ -129,6 +171,7 @@ export default function JobsPage() {
     { label: 'Oportunidades abertas', value: jobs.length, icon: BriefcaseBusiness },
     { label: 'Empresas divulgando', value: new Set(jobs.map((job) => job.company_name)).size, icon: Building2 },
     { label: 'Vagas de estágio', value: jobs.filter((job) => job.type === 'internship').length, icon: Globe2 },
+    { label: 'Candidatura por e-mail', value: jobs.filter((job) => !!job.application_email).length, icon: Mail },
   ];
 
   return (
@@ -150,18 +193,19 @@ export default function JobsPage() {
             <div className="rounded-xl border border-border/70 bg-muted/25 p-4"><div className="flex items-start gap-3"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><p className="text-xs leading-5 text-muted-foreground">Confira os requisitos e clique em “Candidatar-se” para continuar no processo seletivo da empresa anunciante.</p></div></div>
           </div>
         </section>
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">{stats.map((stat) => <Card key={stat.label} className="rounded-xl border-border/70 bg-card/70 p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><stat.icon className="h-4 w-4" /></div><div><div className="text-xl font-bold leading-none">{stat.value}</div><div className="mt-1 text-xs text-muted-foreground">{stat.label}</div></div></div></Card>)}</div>
+        <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{stats.map((stat) => <Card key={stat.label} className="rounded-xl border-border/70 bg-card/70 p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><stat.icon className="h-4 w-4" /></div><div><div className="text-xl font-bold leading-none">{stat.value}</div><div className="mt-1 text-xs text-muted-foreground">{stat.label}</div></div></div></Card>)}</div>
         <section className="mb-6 rounded-2xl border border-border/80 bg-card/70 p-4 shadow-sm sm:p-5">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Filter className="h-4 w-4 text-primary" /> Encontrar uma vaga</div>
-          <div className="grid gap-3 md:grid-cols-[1fr_200px]">
+          <div className="grid gap-3 md:grid-cols-[1fr_200px_200px]">
             <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar cargo, empresa, local ou requisito" className="pl-9" /></div>
             <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as 'all' | JobType)} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="all">Todos os tipos</option>{Object.entries(JOB_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+            <select value={timeFilter} onChange={(event) => setTimeFilter(event.target.value as TimeFilter)} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="all">Qualquer horário</option><option value="morning">🌅 Manhã</option><option value="afternoon">☀️ Tarde</option><option value="night">🌙 Noite</option></select>
           </div>
         </section>
-        {loading ? <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando oportunidades...</div> : filteredJobs.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-14 text-center"><BriefcaseBusiness className="mx-auto mb-3 h-10 w-10 text-primary/40" /><p className="text-sm font-medium">Nenhuma vaga encontrada</p><p className="mt-1 text-xs text-muted-foreground">Tente mudar a busca ou volte mais tarde para conferir novas oportunidades.</p></div> : <section className="grid gap-4 lg:grid-cols-2">{filteredJobs.map((job) => <article key={job.id} className="rounded-2xl border border-border bg-card/80 p-4 shadow-sm transition-colors hover:border-primary/35 sm:p-5"><div className="flex gap-3 sm:gap-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-12 sm:w-12">{job.company_logo_url ? <img src={job.company_logo_url} alt={job.company_name} className="h-10 w-10 rounded-lg object-contain sm:h-11 sm:w-11" /> : <BriefcaseBusiness className="h-5 w-5" />}</div><div className="min-w-0 flex-1 space-y-3"><div className="flex flex-wrap items-center gap-1.5"><Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">{JOB_TYPE_LABELS[job.type]}</Badge>{job.type === 'internship' && <Badge variant="secondary" className="h-5 rounded-full px-2 text-[10px]">Entrada para estudantes</Badge>}</div><div><h2 className="text-base font-bold leading-snug sm:text-lg">{job.title}</h2><p className="mt-1 text-xs font-medium text-primary">{job.company_name}</p></div><div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2"><span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> {job.location || 'Remoto'}</span><span className="inline-flex items-center gap-1.5"><WalletCards className="h-3.5 w-3.5 text-primary" /> {job.salary_range || 'Salário a combinar'}</span></div><p className="line-clamp-3 text-xs leading-5 text-muted-foreground sm:text-sm">{job.description}</p><div className="flex flex-wrap items-center gap-2 pt-1"><Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openApplication(job)}><ExternalLink className="h-3.5 w-3.5" /> Candidatar-se</Button><Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => openDetails(job)}>Saiba mais</Button></div></div></div></article>)}</section>}
+        {loading ? <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando oportunidades...</div> : filteredJobs.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-14 text-center"><BriefcaseBusiness className="mx-auto mb-3 h-10 w-10 text-primary/40" /><p className="text-sm font-medium">Nenhuma vaga encontrada</p><p className="mt-1 text-xs text-muted-foreground">Tente mudar a busca ou volte mais tarde para conferir novas oportunidades.</p></div> : <section className="grid gap-4 lg:grid-cols-2">{filteredJobs.map((job) => <article key={job.id} className="rounded-2xl border border-border bg-card/80 p-4 shadow-sm transition-colors hover:border-primary/35 sm:p-5"><div className="flex gap-3 sm:gap-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-12 sm:w-12">{job.company_logo_url ? <img src={job.company_logo_url} alt={job.company_name} className="h-10 w-10 rounded-lg object-contain sm:h-11 sm:w-11" /> : <BriefcaseBusiness className="h-5 w-5" />}</div><div className="min-w-0 flex-1 space-y-3"><div className="flex flex-wrap items-center gap-1.5"><Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">{JOB_TYPE_LABELS[job.type]}</Badge>{job.type === 'internship' && <Badge variant="secondary" className="h-5 rounded-full px-2 text-[10px]">Entrada para estudantes</Badge>}</div><div><h2 className="text-base font-bold leading-snug sm:text-lg">{job.title}</h2><p className="mt-1 text-xs font-medium text-primary">{job.company_name}</p></div><div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2"><span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> {job.location || 'Remoto'}</span><span className="inline-flex items-center gap-1.5"><WalletCards className="h-3.5 w-3.5 text-primary" /> {job.salary_range || 'Salário a combinar'}</span></div><p className="line-clamp-3 text-xs leading-5 text-muted-foreground sm:text-sm">{job.description}</p><div className="flex flex-wrap items-center gap-2 pt-1"><Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openApplication(job)}><ExternalLink className="h-3.5 w-3.5" /> Candidatar-se</Button>{job.application_email && <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => openEmailApplication(job)}><Mail className="h-3.5 w-3.5" /> Enviar por e-mail</Button>}<Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => openDetails(job)}>Saiba mais</Button></div></div></div></article>)}</section>}
         <div className="mt-8"><AdBanner position="inline" /></div>
       </main>
-      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}><DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">{selected && <><DialogHeader><DialogTitle className="pr-6 text-xl">{selected.title}</DialogTitle><p className="text-sm text-primary">{selected.company_name} · {selected.location || 'Remoto'}</p></DialogHeader><div className="space-y-4 text-sm"><div className="flex flex-wrap gap-2"><Badge variant="outline">{JOB_TYPE_LABELS[selected.type]}</Badge><Badge variant="outline">{selected.salary_range || 'Salário a combinar'}</Badge></div><Separator /><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.description}</div>{selected.requirements && <div><h3 className="mb-2 font-semibold text-foreground">Requisitos</h3><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.requirements}</div></div>}</div><DialogFooter><Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button><Button disabled={!isValidApplicationUrl(selected.application_link)} onClick={() => openApplication(selected)} className="gap-1.5"><ExternalLink className="h-4 w-4" /> Candidatar-se no site da empresa</Button></DialogFooter></>}</DialogContent></Dialog>
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}><DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">{selected && <><DialogHeader><DialogTitle className="pr-6 text-xl">{selected.title}</DialogTitle><p className="text-sm text-primary">{selected.company_name} · {selected.location || 'Remoto'}</p></DialogHeader><div className="space-y-5 text-sm"><div className="flex flex-wrap gap-2"><Badge variant="outline">{JOB_TYPE_LABELS[selected.type]}</Badge><Badge variant="outline">{selected.salary_range || 'Salário a combinar'}</Badge>{selected.openings_count ? <Badge variant="outline">{selected.openings_count} vaga(s)</Badge> : null}<Badge variant="outline">{selected.candidates_count != null ? `${selected.candidates_count} candidatura(s) informada(s)` : 'Candidaturas: não divulgado'}</Badge></div><Separator /><div><h3 className="mb-2 font-semibold text-foreground">Resumo da vaga</h3><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.description}</div></div>{selected.requirements && <div><h3 className="mb-2 font-semibold text-foreground">Requisitos</h3><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.requirements}</div></div>}{selected.application_method && <div><h3 className="mb-2 font-semibold text-foreground">Como se candidatar</h3><p className="mb-2 text-muted-foreground">Método: <strong className="text-foreground">{selected.application_method}</strong></p><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.application_instructions || 'Siga as instruções da empresa anunciadas na vaga.'}</div>{selected.application_email && <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-3"><p className="font-medium text-foreground">E-mail para candidatura</p><p className="mt-1 break-all text-primary">{selected.application_email}</p></div>}</div>}</div><DialogFooter className="flex-wrap"><Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>{selected.application_email && <Button variant="outline" onClick={() => openEmailApplication(selected)} className="gap-1.5"><Mail className="h-4 w-4" /> Enviar currículo por e-mail</Button>}<Button disabled={!isValidApplicationUrl(selected.application_link)} onClick={() => openApplication(selected)} className="gap-1.5"><ExternalLink className="h-4 w-4" /> Candidatar-se no site</Button></DialogFooter></>}</DialogContent></Dialog>
     </div>
   );
 }

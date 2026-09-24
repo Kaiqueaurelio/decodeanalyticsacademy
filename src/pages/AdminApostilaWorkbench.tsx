@@ -56,6 +56,7 @@ interface ApostilaLite {
 }
 
 const AUTOSAVE_MS = 1500;
+const PAGE_LOAD_RETRY_LIMIT = 3;
 const WORKBENCH_SIDEBAR_STORAGE_KEY = 'admin_workbench_sidebar_collapsed_v1';
 
 interface WorkbenchProps {
@@ -155,6 +156,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [pages, setPages] = useState<ApostilaPage[]>([]);
   const [savedDate, setSavedDate] = useState<string>(getLocalDateIso());
   const [contentRevision, setContentRevision] = useState(0);
+  const [hasPendingChanges, setHasPendingChanges] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('expanded') === '1') setEditorExpanded(true);
@@ -165,6 +167,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const draftVersionRef = useRef(0);
   const initialLoadRef = useRef(true);
   const loadRequestRef = useRef(0);
+  const pageLoadRetryRef = useRef(0);
   const saveInFlightRef = useRef<Promise<boolean> | null>(null);
   const creatingPageRef = useRef(false);
   const createPersistedPageRef = useRef<() => Promise<void>>(() => Promise.resolve());
@@ -311,6 +314,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     // criação bem-sucedida parecer que continuava na página anterior.
     const selectedPage = loadedPages.find((page) => page.id === selectedPageId && page.apostila_id === apostilaId);
     if (selectedPage) {
+      pageLoadRetryRef.current = 0;
       const pageScope = selectedPage.id;
       const pageBackupKey = `apostila_backup_${apostilaId}_${pageScope}`;
       const pageBackupRaw = localStorage.getItem(pageBackupKey);
@@ -335,11 +339,17 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         setSavedDate(pageBackup.saved_date || getApostilaPageSavedDate(selectedPage) || getLocalDateIso());
       }
     } else if (selectedPageId) {
-      toast.error('A nova página ainda não foi sincronizada. Tentando carregar novamente.');
-      setLoading(false);
-      window.setTimeout(() => {
-        if (loadRequestRef.current === requestId) void loadApostila(apostilaId);
-      }, 300);
+      pageLoadRetryRef.current += 1;
+      if (pageLoadRetryRef.current <= PAGE_LOAD_RETRY_LIMIT) {
+        toast.error('A nova página ainda não foi sincronizada. Tentando carregar novamente.');
+        setLoading(false);
+        window.setTimeout(() => {
+          if (loadRequestRef.current === requestId) void loadApostila(apostilaId);
+        }, 300);
+      } else {
+        setLoadError('A página criada ainda não apareceu no servidor. Nenhum conteúdo foi apagado. Use “Tentar novamente” após confirmar sua conexão.');
+        setLoading(false);
+      }
       return;
     }
 
@@ -366,7 +376,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }, 100);
   };
 
-  useEffect(() => { if (id) loadApostila(id); }, [id, selectedPageId]);
+  useEffect(() => {
+    pageLoadRetryRef.current = 0;
+    if (id) void loadApostila(id);
+  }, [id, selectedPageId]);
 
   useEffect(() => {
     const handleKeyAdd = () => {
@@ -431,6 +444,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     if (initialLoadRef.current || !id) return;
     draftVersionRef.current += 1;
     dirtyRef.current = true;
+    setHasPendingChanges(true);
     const t = window.setTimeout(() => {
       // All saves, including autosave, must use the single-flight queue below.
       void doSave();
@@ -488,7 +502,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       },
     });
 
-    console.log(`[Workbench] Persisting ${operationType}`, {
+    console.log('[Workbench] Persisting operation', { operationType,
       operationId,
       apostilaId: id,
       pageId: selectedPageId || null,
@@ -637,6 +651,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
       if (draftVersionRef.current === saveDraftVersion) {
         dirtyRef.current = false;
+        setHasPendingChanges(false);
         localStorage.removeItem(`apostila_backup_${id}_${selectedPageId}`);
       }
       setLastSavedAt(new Date(savedAt));
@@ -661,6 +676,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     if (currentApostila?.content?.trim() && !content.trim()) {
       setContent(currentApostila.content);
       dirtyRef.current = false;
+      setHasPendingChanges(false);
       setSaving(false);
       void recordApostilaOperation({
         operationId,
@@ -752,6 +768,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     if (draftVersionRef.current === saveDraftVersion) {
       dirtyRef.current = false;
+      setHasPendingChanges(false);
       localStorage.removeItem(`apostila_backup_${id}_main`);
     }
     setContentRevision(Number((savedApostila as any)?.content_revision ?? contentRevision + 1));
@@ -784,6 +801,33 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       if (saveInFlightRef.current === savePromise) saveInFlightRef.current = null;
     }
   };
+
+  // O autosave e o backup local preservam o rascunho; estes eventos evitam que
+  // uma troca de aba, reconexão ou fechamento esconda uma alteração pendente.
+  useEffect(() => {
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    const saveAfterReconnect = () => {
+      if (dirtyRef.current) void doSave(false);
+    };
+
+    const saveWhenVisible = () => {
+      if (document.visibilityState === 'visible' && dirtyRef.current) void doSave(false);
+    };
+
+    window.addEventListener('beforeunload', warnBeforeUnload);
+    window.addEventListener('online', saveAfterReconnect);
+    document.addEventListener('visibilitychange', saveWhenVisible);
+    return () => {
+      window.removeEventListener('beforeunload', warnBeforeUnload);
+      window.removeEventListener('online', saveAfterReconnect);
+      document.removeEventListener('visibilitychange', saveWhenVisible);
+    };
+  }, [id, selectedPageId, title, category, content, semester, course, savedDate]);
 
   const navigateAfterSave = async (url: string, options?: { replace?: boolean }) => {
     const saved = await doSave(false);
@@ -847,6 +891,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setTitle(version.title);
     setContent(version.content);
     dirtyRef.current = true;
+    setHasPendingChanges(true);
     toast.success('Versão restaurada!');
   };
 
@@ -1353,6 +1398,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         title={title}
         published={published}
         saving={saving}
+        hasPendingChanges={hasPendingChanges}
         splitting={splitting}
         lastSavedAt={lastSavedAt}
         onSave={() => { void saveAndOpenApostilaManagement(); }}

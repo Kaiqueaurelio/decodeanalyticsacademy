@@ -195,7 +195,7 @@ function ImagePanel({
 }) {
   const widthNum = useMemo(() => {
     if (!attrs.width) return 100;
-    const n = parseInt(String(attrs.width).replace('%', ''), 10);
+    const n = parseInt(String(attrs.width).replaceAll('%', ''), 10);
     return Number.isFinite(n) ? Math.max(20, Math.min(100, n)) : 100;
   }, [attrs.width]);
 

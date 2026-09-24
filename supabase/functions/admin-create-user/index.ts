@@ -98,13 +98,25 @@ Deno.serve(async (req) => {
         is_blocked: false,
         must_change_password: true,
       } as any, { onConflict: 'user_id' });
-      if (profileErr) console.warn('admin-create-user profile upsert failed', { code: profileErr.code });
+      if (profileErr) {
+        console.error('admin-create-user profile upsert failed', { code: profileErr.code });
+        await admin.auth.admin.deleteUser(newUserId).catch((cleanupError) => {
+          console.error('admin-create-user cleanup after profile failure failed', cleanupError);
+        });
+        return json({ error: 'Não foi possível concluir o cadastro do usuário.' }, 500);
+      }
 
       const { error: roleErr } = await admin.from('user_roles').upsert({
         user_id: newUserId,
         role: makeAdmin ? 'admin' : 'user',
       } as any, { onConflict: 'user_id,role' });
-      if (roleErr) console.warn('admin-create-user role upsert failed', { code: roleErr.code });
+      if (roleErr) {
+        console.error('admin-create-user role upsert failed', { code: roleErr.code });
+        await admin.auth.admin.deleteUser(newUserId).catch((cleanupError) => {
+          console.error('admin-create-user cleanup after role failure failed', cleanupError);
+        });
+        return json({ error: 'Não foi possível concluir o cadastro do usuário.' }, 500);
+      }
     }
 
     return json({ ok: true, user_id: newUserId, email });

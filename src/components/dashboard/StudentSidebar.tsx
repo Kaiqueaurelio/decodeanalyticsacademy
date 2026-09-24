@@ -17,6 +17,7 @@ import {
   ChevronsRight,
   Search,
   LogOut,
+  Target,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
@@ -46,6 +47,8 @@ const menuGroups = [
     label: 'Networking',
     items: [
       { to: '/vagas', icon: BriefcaseBusiness, label: 'Vagas e estágios' },
+      { to: '/carreira', icon: Target, label: 'Central de Carreira' },
+      { to: '/empregabilidade', icon: BriefcaseBusiness, label: 'Inteligência da Empregabilidade' },
       { to: '/noticias', icon: Newspaper, label: 'News Tech' },
       { to: '/eventos', icon: CalendarRange, label: 'Eventos' },
     ],

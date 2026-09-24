@@ -123,3 +123,33 @@ describe('páginas de estudo no mobile', () => {
     }
   });
 });
+
+
+describe('topbar desktop com sidebar expandida', () => {
+  const topbar = read('src/components/dashboard/DashboardTopbar.tsx');
+
+  it('não exibe o bloco de atalhos administrativos no espaço intermediário', () => {
+    expect(topbar).toContain('hidden min-[1500px]:flex items-center gap-1');
+  });
+
+  it('reduz Painel Admin para ícone antes da faixa larga', () => {
+    expect(topbar).toContain('hidden min-[1400px]:flex h-9');
+    expect(topbar).toContain('min-[1400px]:hidden h-9 w-9');
+  });
+
+  it('permite que a busca encolha sem esmagar os controles laterais', () => {
+    expect(topbar).toContain('min-w-0 flex-1 basis-0 max-w-2xl');
+    expect(topbar).toContain('ml-auto flex shrink-0 items-center');
+  });
+});
+
+
+describe('topbar intermediário com sidebar expandida', () => {
+  const topbar = read('src/components/dashboard/DashboardTopbar.tsx');
+
+  it('compacta a identidade do usuário antes da faixa larga', () => {
+    expect(topbar).toContain('flex shrink-0 items-center gap-1.5 sm:gap-2.5');
+    expect(topbar).toContain('hidden min-[1400px]:block leading-tight text-left');
+    expect(topbar).toContain('hidden min-[1400px]:block h-3.5 w-3.5');
+  });
+});

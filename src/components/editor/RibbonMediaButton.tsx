@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 /**
  * RibbonMediaButton — botão unificado para upload de mídia (Áudio, Vídeo, Documentos)
  * com visual nativo do ribbon Word.
@@ -33,7 +35,7 @@ export function RibbonMediaButton({ onMediaInserted, apostilaId }: Props) {
 
     try {
       const ext = file.name.split('.').pop() || 'bin';
-      const path = `apostila-media/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `apostila-media/${Date.now()}-${secureRandom().toString(36).slice(2)}.${ext}`;
 
       const { error } = await supabase.storage.from('materials').upload(path, file, {
         cacheControl: '3600',

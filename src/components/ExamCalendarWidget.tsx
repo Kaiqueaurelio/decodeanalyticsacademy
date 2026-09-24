@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -46,7 +48,7 @@ export function ExamCalendarWidget() {
     })();
 
     const channel = supabase
-      .channel(`calendar-events-widget-${Math.random().toString(36).slice(2)}`)
+      .channel(`calendar-events-widget-${secureRandom().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events' }, () => {
         supabase.from('calendar_events')
           .select('id,title,event_date,event_time,event_type,subject')

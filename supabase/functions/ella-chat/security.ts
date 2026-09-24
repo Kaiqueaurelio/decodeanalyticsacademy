@@ -3,6 +3,7 @@
 // Princípios: Zero Trust, RBAC, least privilege e default deny.
 // Nada aqui depende da conversa, do prompt ou de dados enviados pelo cliente:
 // a decisão usa apenas o contexto derivado do token e do banco (papel real).
+declare const Deno: any;
 
 /** Ferramentas liberadas para qualquer usuário autenticado (leitura / dados próprios). */
 export const STUDENT_TOOLS = new Set<string>([
@@ -71,6 +72,173 @@ export function authorizeTool(name: string, ctx: AuthzCtx): AuthzDecision {
     return { allowed: false, reason: "Recurso fora do escopo de conteúdo do usuário." };
   }
   return { allowed: true };
+}
+
+/** Ferramentas com efeito relevante: nunca são executadas apenas por decisão do modelo. */
+export const HIGH_IMPACT_TOOLS = new Set<string>([
+  ...ADMIN_TOOLS,
+]);
+
+export function isHighImpactTool(name: string): boolean {
+  return typeof name === "string" && HIGH_IMPACT_TOOLS.has(name);
+}
+
+function base64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function fromBase64Url(value: string): Uint8Array {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
+  const binary = atob(padded);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function confirmationSecret(): string {
+  const secret = Deno.env.get("ELLA_CONFIRMATION_SECRET") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!secret) throw new Error("ELLA_CONFIRMATION_SECRET não configurado.");
+  return secret;
+}
+
+async function signConfirmation(payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(confirmationSecret()),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  return base64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload))));
+}
+
+export type ConfirmationPayload = {
+  v: 1;
+  uid: string;
+  tool: string;
+  argsHash: string;
+  exp: number;
+  nonce: string;
+};
+
+/** Cria um token que o cliente recebe, mas o modelo nunca recebe. */
+export async function createConfirmationToken(userId: string, tool: string, args: unknown, ttlSeconds = 120): Promise<string> {
+  const payload: ConfirmationPayload = {
+    v: 1,
+    uid: userId,
+    tool,
+    argsHash: await sha256Hex(JSON.stringify(args ?? {})),
+    exp: Math.floor(Date.now() / 1000) + Math.min(Math.max(ttlSeconds, 30), 300),
+    nonce: crypto.randomUUID(),
+  };
+  const encoded = base64Url(new TextEncoder().encode(JSON.stringify(payload)));
+  const signature = await signConfirmation(encoded);
+  return encoded + "." + signature;
+}
+
+/** Valida assinatura, usuário, ferramenta, argumentos exatos e expiração. */
+export async function verifyConfirmationToken(
+  token: unknown,
+  userId: string,
+  tool: string,
+  args: unknown,
+): Promise<{ valid: boolean; reason?: string; nonce?: string; exp?: number }> {
+  if (typeof token !== "string" || token.length > 4096) return { valid: false, reason: "Token de confirmação ausente ou inválido." };
+  const [encoded, signature] = token.split(".");
+  if (!encoded || !signature) return { valid: false, reason: "Token de confirmação inválido." };
+  try {
+    const expected = await signConfirmation(encoded);
+    if (expected.length !== signature.length) return { valid: false, reason: "Assinatura de confirmação inválida." };
+    const a = new TextEncoder().encode(expected);
+    const b = new TextEncoder().encode(signature);
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+    if (diff !== 0) return { valid: false, reason: "Assinatura de confirmação inválida." };
+
+    const payload = JSON.parse(new TextDecoder().decode(fromBase64Url(encoded))) as ConfirmationPayload;
+    if (payload.v !== 1 || payload.uid !== userId || payload.tool !== tool) {
+      return { valid: false, reason: "Token não corresponde ao usuário ou à ação." };
+    }
+    if (!Number.isFinite(payload.exp) || payload.exp < Math.floor(Date.now() / 1000)) {
+      return { valid: false, reason: "Token de confirmação expirado." };
+    }
+    const argsHash = await sha256Hex(JSON.stringify(args ?? {}));
+    if (argsHash !== payload.argsHash) return { valid: false, reason: "Os parâmetros da ação foram alterados após a confirmação." };
+    return { valid: true, nonce: payload.nonce, exp: payload.exp };
+  } catch {
+    return { valid: false, reason: "Token de confirmação inválido." };
+  }
+}
+
+/**
+ * Conteúdo externo nunca deve ser promovido a instrução. Delimitamos o dado
+ * para reduzir confusão de contexto e deixar explícito para o modelo que ele
+ * pode conter texto adversarial.
+ */
+export function wrapUntrustedContent(label: string, content: unknown, maxChars = 6000): string {
+  const safeLabel = String(label).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80);
+  const value = String(content ?? "").slice(0, maxChars);
+  return `<UNTRUSTED_DATA source="${safeLabel}">\n${value}\n</UNTRUSTED_DATA>`;
+}
+
+/** Sinal de telemetria para tentativas comuns de prompt injection. Não autoriza nem bloqueia sozinho. */
+export function detectPromptInjection(value: unknown): boolean {
+  const text = String(value ?? "")
+    .normalize("NFKC")
+    .replace(/[\\u200B-\\u200F\\u202A-\\u202E\\u2060\\u2066-\\u2069]/g, "")
+    .toLowerCase();
+  if (!text) return false;
+  const patterns = [
+    /ignore (all|any|the|previous|prior) instructions?/i,
+    /ignore .*instructions?/i,
+    /ignore .*instru(?:ções|coes)/i,
+    /ignor(?:e|ar) .*instru(?:ções|coes)/i,
+    /desconsidere .*instru(?:ções|coes)/i,
+    /disregard .*instructions?/i,
+    /system prompt|developer message|hidden prompt|reveal.*prompt/i,
+    /pretend (to be|you are)|act as .*system|jailbreak/i,
+    /call (the )?tool|use (the )?function|execute .*tool/i,
+    /reveal (the )?(api|service|secret|token|key|password)/i,
+    /bypass (security|authorization|permission|confirmation)/i,
+  ];
+  return patterns.some((pattern) => pattern.test(text));
+}
+
+/** Validação básica contra SSRF e URLs controladas por conteúdo não confiável. */
+export function validateExternalHttpsUrl(value: unknown): { valid: boolean; url?: string; reason?: string } {
+  if (typeof value !== "string" || value.length > 2048) {
+    return { valid: false, reason: "URL inválida ou longa demais." };
+  }
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    if (url.protocol !== "https:" || url.username || url.password) {
+      return { valid: false, reason: "Somente HTTPS sem credenciais é permitido." };
+    }
+    if (
+      host === "localhost" ||
+      host === "localhost.localdomain" ||
+      host === "metadata.google.internal" ||
+      host === "metadata.google" ||
+      host === "0.0.0.0" ||
+      host === "::1" ||
+      /^127\./.test(host) ||
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^169\.254\./.test(host) ||
+      /^(172\.1[6-9]|172\.2[0-9]|172\.3[0-1])\./.test(host)
+    ) {
+      return { valid: false, reason: "Destino privado ou de metadata bloqueado." };
+    }
+    return { valid: true, url: url.toString() };
+  } catch {
+    return { valid: false, reason: "URL inválida." };
+  }
 }
 
 /** Parâmetros nunca são gravados em bruto: strings longas são cortadas. */
@@ -335,6 +503,8 @@ export function classifyDenial(name: unknown, ctx: AuthzCtx, reason?: string): S
   } else if (known && typeof name === "string" && ENEM_BLOCKED_TOOLS.has(name) && ctx.contentScope !== "full") {
     kind = "scope_violation";
     severity = "medium";
+  } else if (!known) {
+    severity = "low";
   }
 
   return {

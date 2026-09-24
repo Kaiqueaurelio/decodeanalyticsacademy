@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useEffect, useMemo, useState } from 'react';
 import { X, ExternalLink, Share2, Loader2, AlertCircle, Clock } from 'lucide-react';
 import DOMPurify from 'dompurify';
@@ -205,7 +207,7 @@ export function InAppNewsReader({ item, onClose }: Props) {
                 <Loader2 className="h-4 w-4 animate-spin" /> Carregando matéria completa…
               </div>
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-4 bg-muted rounded animate-pulse" style={{ width: `${70 + Math.random() * 30}%` }} />
+                <div key={i} className="h-4 bg-muted rounded animate-pulse" style={{ width: `${70 + secureRandom() * 30}%` }} />
               ))}
             </div>
           )}

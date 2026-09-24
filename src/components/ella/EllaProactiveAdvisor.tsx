@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import React, { useEffect, useState } from 'react';
 import { Sparkles, X, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,7 +20,7 @@ export const EllaProactiveAdvisor: React.FC = () => {
         "Paralelo aos estudos, verifique a aba de Vagas e Estágios. Temos excelentes oportunidades em São Paulo compatíveis com seu curso!",
         "Lembre-se: a consistência vence a intensidade. Continue firme na sua trilha hoje!"
       ];
-      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+      const randomMsg = messages[Math.floor(secureRandom() * messages.length)];
       setTip(randomMsg);
       setIsOpen(true);
     }, 4000);

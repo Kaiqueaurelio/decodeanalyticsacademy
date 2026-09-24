@@ -11,7 +11,9 @@ import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { ApostilaAudios } from '@/components/ApostilaAudios';
+import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { ApostilaChat } from '@/components/ApostilaChat';
+import { EllaChat } from '@/components/ella/EllaChat';
 import { ApostilaContentBoundary } from '@/components/ApostilaContentBoundary';
 import { AskHelpFab } from '@/components/AskHelpFab';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -85,6 +87,7 @@ function isPlaceholderApostilaContent(content?: string | null): boolean {
     'conteúdo em processamento',
     'material em fase de estruturação',
     'este conteúdo está sendo estruturado',
+    'conteúdo segmentado automaticamente por data',
   ].some((marker) => normalized.includes(marker));
 }
 
@@ -191,6 +194,8 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
+  const [ellaOpen, setEllaOpen] = useState(false);
+  const [ellaPrompt, setEllaPrompt] = useState('');
   const [exportingPdf, setExportingPdf] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -227,7 +232,23 @@ export default function ApostilaPage({ tab, setTab }: Props) {
           pageRowsData = fallbackPages.data;
           pageRowsError = fallbackPages.error;
         }
-        if (pageRowsError) throw pageRowsError;
+        // Uma falha em páginas extras não pode tornar a apostila inteira
+        // indisponível. Mantemos o conteúdo principal/estruturado visível e
+        // registramos a falha para diagnóstico.
+        if (pageRowsError) {
+          console.warn('[ApostilaPage] Não foi possível carregar páginas adicionais:', pageRowsError);
+          pageRowsData = [];
+        }
+
+        if (apostilaResult.error || !apostilaResult.data) {
+          throw apostilaResult.error || new Error('Apostila não encontrada.');
+        }
+        if (exercisesResult.error) {
+          console.warn('[ApostilaPage] Não foi possível carregar exercícios:', exercisesResult.error);
+        }
+        if (treeResult.error) {
+          console.warn('[ApostilaPage] Não foi possível carregar estrutura da apostila:', treeResult.error);
+        }
 
         const ap = apostilaResult.data;
         const pageRows = sortApostilaPagesChronologically((pageRowsData || []).map((page: any) => ({
@@ -236,7 +257,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
         })) as Array<{ id: string; title: string; content: string; position: number; saved_date?: string | null; updated_at?: string | null; created_at?: string | null }>);
         setApostila(ap);
         setExtraPages(pageRows);
-        setExerciseCount(exercisesResult.data?.length || 0);
+        setExerciseCount(exercisesResult.error ? 0 : (exercisesResult.data?.length || 0));
 
         const hasPlaceholder = isPlaceholderApostilaContent(ap?.content);
         if (hasPlaceholder && treeResult.data) {
@@ -363,11 +384,6 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     .filter(Boolean)
     .join('\n\n'), [contentBlocks]);
 
-  const organizedContentBlocks = useMemo(() => contentBlocks.map((block) => ({
-    ...block,
-    sections: organizeApostilaSections(parseContent(block.content || null)),
-  })), [contentBlocks]);
-
   const sections = useMemo(() => parseContent(combinedContent || null), [combinedContent]);
 
   /**
@@ -399,48 +415,6 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     [tocItems]
   );
 
-  const renderContentSection = (section: ReturnType<typeof organizeApostilaSections>[number], idx: number, pageId: string) => {
-    if (section.isPlaceholder) return null;
-
-    const sectionNumber = tocNumberById[section.id] || String(idx + 1);
-    const wordCount = (section.content || '').trim().split(/\s+/).filter(Boolean).length;
-    const readMin = Math.max(1, Math.round(wordCount / 200));
-
-    return (
-      <section
-        key={`${pageId}-${section.id}-${idx}`}
-        id={section.id}
-        data-section-id={section.id}
-        className="scroll-mt-24 animate-content-show"
-        style={{ animationDelay: `${300 + idx * 80}ms` }}
-      >
-        {section.level === 1 && (
-          <header className={section.isGroupOnly ? 'mb-4' : 'mb-5'}>
-            <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
-              Seção {sectionNumber}{section.hasContent && wordCount > 50 && <span className="text-muted-foreground/70"> · {readMin} min de leitura</span>}
-            </div>
-            <h2 className="font-display text-[22px] sm:text-[26px] leading-[1.25] tracking-tight text-foreground mb-2.5">
-              {section.displayTitle}
-            </h2>
-            <div className={`h-[2px] rounded-full ${section.isGroupOnly ? 'w-16 bg-border/70' : 'w-10 bg-primary/80'}`} />
-          </header>
-        )}
-        {section.level === 2 && (
-          <h3 className={`font-display text-[17px] sm:text-[18px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-2 text-foreground/90' : 'mb-3 text-foreground border-b border-border/40 pb-1.5'}`}>
-            {section.displayTitle}
-          </h3>
-        )}
-        {section.level === 3 && (
-          <h4 className={`font-display text-[15px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-1.5 text-foreground/80' : 'mb-2 text-primary/90'}`}>
-            {section.displayTitle}
-          </h4>
-        )}
-        {section.hasContent && (
-          <ApostilaContentBoundary content={section.content} />
-        )}
-      </section>
-    );
-  };
 
   const handleExportPdf = useCallback(async () => {
     if (!apostila) return;
@@ -573,7 +547,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   );
 
   return (
-    <div className={`min-h-screen bg-background relative overflow-x-hidden ${focusMode ? 'focus-mode' : ''}`}>
+    <div className={`apostila-page-shell min-h-screen bg-background relative overflow-x-hidden ${focusMode ? 'focus-mode' : ''}`}>
       {!focusMode && <Watermark />}
       {!focusMode && <AppHeader />}
       {!focusMode && <AdSidebar />}
@@ -604,7 +578,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
         {/* Navigation bar */}
         <div className={`w-full max-w-7xl mx-auto px-3 sm:px-4 ${focusMode ? 'py-2' : 'py-4'} animate-content-show`}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs gap-1.5 hover-lift">
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
             </Button>
@@ -617,7 +591,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
             >
               <BookOpen className="h-3.5 w-3.5" /> Modo estudo
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="apostila-action-bar flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 min-w-0">
               {isMobile && sections.length > 1 && (
                 <Button
                   variant="outline"
@@ -658,7 +632,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
               </Button>
 
               {isAdmin && (
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                   <Sheet open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                     <SheetTrigger asChild>
                       <Button
@@ -686,6 +660,12 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                       </div>
                     </SheetContent>
                   </Sheet>
+                  {apostila && (
+                    <ApostilaMaterialsManager
+                      apostilaId={apostila.id}
+                      apostilaTitle={apostila.title}
+                    />
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -815,7 +795,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
         {/* 3-column layout */}
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 pb-16">
-          <div className={`grid gap-8 ${
+          <div className={`apostila-layout-grid grid gap-8 ${
             focusMode
               ? 'grid-cols-1 max-w-3xl mx-auto'
               : isMobile
@@ -967,8 +947,8 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                 />
                 
                 {/* Área de pendências visível apenas para administradores. Alunos nunca veem o botão "Resolver Pendências". */}
-                {user && (
-                  (!organizedSections.length || organizedSections.every(s => s.isPlaceholder)) ? (
+                {isAdmin && (
+                  contentBlocks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
                       <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
                         <BookOpen className="h-10 w-10 text-primary/40" />
@@ -1001,13 +981,10 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                             size="lg" 
                             className="gap-2 gradient-primary shadow-lg shadow-primary/20 hover-lift min-w-[200px]"
                             onClick={() => {
+                              const prompt = 'Preciso que você resolva as pendências desta apostila "' + apostila.title + '". Ela está vazia ou incompleta. Estruture o conteúdo, adicione glossário e exercícios de fixação agora.';
                               toast.info("Ella Ribeiro está iniciando a correção deste material...");
-                              setChatOpen(true);
-                              setTimeout(() => {
-                                window.dispatchEvent(new CustomEvent('ella:prompt', { 
-                                  detail: `Preciso que você resolva as pendências desta apostila "${apostila.title}". Ela está vazia ou incompleta. Estruture o conteúdo, adicione glossário e exercícios de fixação agora.` 
-                                }));
-                              }, 500);
+                              setEllaPrompt(prompt);
+                              setEllaOpen(true);
                             }}
                           >
                             <Sparkles className="h-4 w-4" /> Resolver Pendências
@@ -1021,13 +998,13 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   ) : null
                 )}
 
-                {user && organizedContentBlocks.length > 0 && (
+                {user && contentBlocks.length > 0 && (
                   <div
                     id="apostila-fluxo-continuo"
                     data-apostila-continuous-flow="true"
                     className="apostila-continuous-flow space-y-12"
                   >
-                    {organizedContentBlocks.map((block, blockIndex) => (
+                    {contentBlocks.map((block, blockIndex) => (
                       <section
                         key={block.id}
                         id={`apostila-page-${block.id}`}
@@ -1045,9 +1022,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                             {block.title}
                           </h2>
                         </header>
-                        <div className="space-y-10">
-                          {block.sections.map((section, idx) => renderContentSection(section, idx, block.id))}
-                        </div>
+                        <ApostilaContentBoundary content={block.content} />
                       </section>
                     ))}
                   </div>
@@ -1066,6 +1041,19 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
               {/* Linked Materials */}
               <div id="materiais-vinculados" className="scroll-mt-24">
+                {isAdmin && apostila && (
+                  <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-primary/25 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Administrar materiais desta apostila</p>
+                      <p className="text-xs text-muted-foreground">Adicione áudio, imagem, vídeo ou documento sem sair desta página.</p>
+                    </div>
+                    <ApostilaMaterialsManager
+                      apostilaId={apostila.id}
+                      apostilaTitle={apostila.title}
+                      triggerLabel="Adicionar mídia"
+                    />
+                  </div>
+                )}
                 <ApostilaMaterials apostilaId={id!} excludeAudio />
               </div>
 
@@ -1124,6 +1112,18 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
         {/* FAB: Pedir ajuda — Chat IA / Foto / Comunidade */}
         <AskHelpFab onOpenChat={() => setChatOpen(true)} />
+
+        {/* Ella Sheet — usado pelo fluxo administrativo de resolução de pendências */}
+        <Sheet open={ellaOpen} onOpenChange={setEllaOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-lg lg:max-w-xl p-0 flex flex-col gap-0 border-l border-primary/20">
+            <div className="flex-1 overflow-hidden">
+              <EllaChat
+                initialPrompt={ellaPrompt}
+                contextHint={'Apostila em manutenção: ' + apostila.title + ' (ID: ' + id + '). O administrador acionou Resolver Pendências.'}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
 
         {/* Chat Sheet */}
         <Sheet open={chatOpen} onOpenChange={setChatOpen}>

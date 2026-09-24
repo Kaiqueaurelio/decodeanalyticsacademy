@@ -38,6 +38,7 @@ interface ApostilaHealthBarProps {
   title: string;
   published: boolean;
   saving: boolean;
+  hasPendingChanges?: boolean;
   splitting?: boolean;
   lastSavedAt: Date | null;
   onSave: () => void;
@@ -64,6 +65,7 @@ export function ApostilaHealthBar({
   title,
   published,
   saving,
+  hasPendingChanges = false,
   splitting,
   lastSavedAt,
   onSave,
@@ -116,6 +118,11 @@ export function ApostilaHealthBar({
               <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground animate-pulse">
                 <Clock className="h-3 w-3" />
                 Salvando...
+              </span>
+            ) : hasPendingChanges ? (
+              <span className="flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+                <Clock className="h-3 w-3" />
+                ALTERAÇÕES LOCAIS PROTEGIDAS
               </span>
             ) : lastSavedAt ? (
               <div className="flex flex-col items-end">

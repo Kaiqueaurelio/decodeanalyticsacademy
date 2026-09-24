@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
     );
   } catch (err: any) {
     console.error("[send-push] error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: "Não foi possível enviar as notificações." }), {
       status: 500,
       headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });

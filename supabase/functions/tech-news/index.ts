@@ -64,13 +64,24 @@ function stripHtml(s: string): string {
 }
 
 function pick(block: string, tag: string): string {
-  const m = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i'));
-  return m ? decodeEntities(m[1]).trim() : '';
+  const wanted = tag.trim().toLowerCase();
+  if (!wanted || wanted.length > 64) return '';
+  const m = /<([A-Za-z0-9:_-]+)[^>]*>([\s\S]*?)<\/\1>/i.exec(block);
+  return m && m[1].toLowerCase() === wanted ? decodeEntities(m[2]).trim() : '';
 }
 
 function pickAttr(block: string, tag: string, attr: string): string {
-  const m = block.match(new RegExp(`<${tag}[^>]*\\s${attr}=["']([^"']+)["']`, 'i'));
-  return m ? m[1] : '';
+  const wantedTag = tag.trim().toLowerCase();
+  const wantedAttr = attr.trim().toLowerCase();
+  if (!wantedTag || !wantedAttr || wantedTag.length > 64 || wantedAttr.length > 64) return '';
+  const tagMatch = /<([A-Za-z0-9:_-]+)\b([^>]*)>/i.exec(block);
+  if (!tagMatch || tagMatch[1].toLowerCase() !== wantedTag) return '';
+  const attrRe = /([A-Za-z_:][A-Za-z0-9:._-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
+  let match: RegExpExecArray | null;
+  while ((match = attrRe.exec(tagMatch[2])) !== null) {
+    if (match[1].toLowerCase() === wantedAttr) return match[2] ?? match[3] ?? '';
+  }
+  return '';
 }
 
 function extractImage(block: string): string | null {

@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -157,7 +159,7 @@ export default function CommunityPage() {
 
     // Realtime subscription
     if (channelRef.current) supabase.removeChannel(channelRef.current);
-    const ch = supabase.channel(`community-${activeChannel.id}-${Math.random().toString(36).slice(2)}`)
+    const ch = supabase.channel(`community-${activeChannel.id}-${secureRandom().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'community_posts',
         filter: `channel_id=eq.${activeChannel.id}`,

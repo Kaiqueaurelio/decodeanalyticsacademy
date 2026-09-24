@@ -10,6 +10,9 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
+  define: {
+    "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify("test-publishable-key"),
+  },
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
   },

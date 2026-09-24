@@ -28,6 +28,25 @@ function isNumberedHeadingCandidate(number: string, title: string) {
   return true;
 }
 
+/**
+ * Materiais importados de PDF ou de documentos de aula muitas vezes trazem
+ * títulos em caixa alta, sem o marcador `#` do Markdown. Reconhecemos apenas
+ * linhas isoladas e textuais para manter a estrutura visual sem interpretar
+ * tabelas, códigos ou resultados numéricos como capítulos.
+ */
+function isStandaloneUppercaseHeading(line: string, previousLine: string, nextLine: string) {
+  const value = line.trim();
+  const letters = value.match(/[A-Za-zÀ-ÖØ-öø-ÿ]/g) || [];
+  const words = value.split(/\s+/).filter(Boolean);
+
+  if (value.length < 3 || value.length > 90 || letters.length < 3 || words.length > 12) return false;
+  if (/[|=]/.test(value) || /\d{2,}/.test(value) || /[:.;!?]$/.test(value)) return false;
+  if (value !== value.toLocaleUpperCase('pt-BR')) return false;
+
+  // Uma linha de título fica separada do corpo pelo menos em um dos lados.
+  return !previousLine.trim() || !nextLine.trim();
+}
+
 function redistributeOrphanImages(sections: ApostilaSection[]): ApostilaSection[] {
   const orphanImages: string[] = [];
   const cleaned = sections.map((s) => {
@@ -89,10 +108,16 @@ export function parseApostilaContent(raw: string | null): ApostilaSection[] {
   const sections: ApostilaSection[] = [];
   let current: ApostilaSection | null = null;
 
-  for (const line of lines) {
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
     const trimmedLine = line.trim();
     const numberedMatch = trimmedLine.match(/^(\d+(?:\.\d+)*)[.\s\-–]+\s*(.+)/);
     const hashMatch = trimmedLine.match(/^(#{1,3})\s+(.+)/);
+    const uppercaseHeading = !hashMatch && !numberedMatch && isStandaloneUppercaseHeading(
+      trimmedLine,
+      lines[index - 1] || '',
+      lines[index + 1] || '',
+    );
 
     if (hashMatch) {
       if (current && (current.title.trim() || current.content.trim())) sections.push(current);
@@ -106,6 +131,9 @@ export function parseApostilaContent(raw: string | null): ApostilaSection[] {
       const title = numberedMatch[2].trim();
       const id = `section-${sections.length}`;
       current = { id, title, level: Math.min(depth, 3), content: '' };
+    } else if (uppercaseHeading) {
+      if (current && (current.title.trim() || current.content.trim())) sections.push(current);
+      current = { id: `section-${sections.length}`, title: trimmedLine, level: 2, content: '' };
     } else {
       if (!current) {
         current = { id: 'section-0', title: 'Introdução', level: 1, content: '' };

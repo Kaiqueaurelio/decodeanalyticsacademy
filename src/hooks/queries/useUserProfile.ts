@@ -16,7 +16,6 @@ export interface UserProfileLite {
   account_type: string;
   content_scope: ContentScope;
   must_change_password: boolean;
-  is_admin: boolean;
 }
 
 export function useUserProfile(userId: string | undefined) {
@@ -27,7 +26,7 @@ export function useUserProfile(userId: string | undefined) {
     queryFn: async (): Promise<UserProfileLite | null> => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('semester, course, full_name, ra, email, account_type, content_scope, must_change_password, is_admin' as any)
+        .select('semester, course, full_name, ra, email, account_type, content_scope, must_change_password' as any)
         .eq('user_id', userId!)
         .maybeSingle();
       if (error || !data) return null;
@@ -43,7 +42,6 @@ export function useUserProfile(userId: string | undefined) {
         account_type: row.account_type || 'email',
         content_scope: scope,
         must_change_password: Boolean(row.must_change_password),
-        is_admin: Boolean(row.is_admin),
       };
     },
   });

@@ -167,7 +167,7 @@ serve(async (req) => {
           .eq("apostila_id", apostila_id);
 
         if (!delErr) break;
-        console.error(`Erro ao limpar módulos existentes (tentativas restantes ${retries}):`, delErr);
+        console.error('Erro ao limpar módulos existentes', { retries, error: delErr });
         retries--;
         if (retries > 0) await new Promise(r => setTimeout(r, 500));
       }
@@ -224,7 +224,7 @@ serve(async (req) => {
         }));
         if (lessonRows.length) {
           const { error: lErr } = await admin.from("apostila_lessons").insert(lessonRows);
-          if (lErr) throw new Error(`Falha inserindo lições: ${lErr.message}`);
+          if (lErr) throw new Error("Falha inserindo lições");
           lessonCount += lessonRows.length;
         }
       }

@@ -16,16 +16,22 @@ import { SpeakButton } from "../SpeakButton";
 import { useApostilasList } from "@/hooks/queries/useDashboardData";
 
 type Msg = { role: "user" | "assistant"; content: string; actions?: any[] };
+type PendingConfirmation = {
+  tool: string;
+  args: Record<string, unknown>;
+  confirmation_token: string;
+};
 
 const STORAGE_KEY = "ella.chat.v1";
 
 interface EllaChatProps {
   contextHint?: string;
+  initialPrompt?: string;
   compact?: boolean;
   onAfterAction?: () => void;
 }
 
-export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps) {
+export function EllaChat({ contextHint, initialPrompt, compact, onAfterAction }: EllaChatProps) {
   const { user, isAdmin } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState(() => getEllaAvatarUrl());
   const [contentScope, setContentScope] = useState<string>("full");
@@ -91,9 +97,11 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusHint, setStatusHint] = useState<string | null>(null);
+  const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
   const navigate = useNavigate();
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const initialPromptSentRef = useRef<string | null>(null);
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40))); } catch {}
@@ -148,6 +156,11 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
           if (name === "web_search") setStatusHint("Pesquisando na internet…");
           else setStatusHint("Consultando o app…");
         },
+        onConfirmationRequired: (payload) => {
+          if (!isAdmin) return;
+          setPendingConfirmation(payload);
+          setStatusHint("Aguardando sua confirmação…");
+        },
         onDone: (actions) => {
           setStatusHint(null);
           const finalText = streamed + pending;
@@ -185,6 +198,12 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     setTimeout(() => taRef.current?.focus(), 50);
   }, [input, loading, messages, contextHint, navigate, onAfterAction]);
 
+  useEffect(() => {
+    if (!initialPrompt || !user || initialPromptSentRef.current === initialPrompt) return;
+    initialPromptSentRef.current = initialPrompt;
+    void send(initialPrompt);
+  }, [initialPrompt, user, send]);
+
   useEffect(() => { taRef.current?.focus(); }, []);
 
   // Listener para prompt externo (ex.: botão de resolver pendências)
@@ -211,6 +230,46 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     if (loading) return;
     send("Gere 5 flashcards de revisão (Pergunta | Resposta) baseados na nossa última explicação ou no contexto da aula atual.");
   };
+
+  const confirmPendingAction = useCallback(async () => {
+    const pending = pendingConfirmation;
+    if (!pending || loading || !isAdmin) return;
+    setPendingConfirmation(null);
+    setStatusHint("Executando ação confirmada…");
+    setLoading(true);
+
+    const { error } = await streamFunction(
+      "ella-chat",
+      {
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        context: "Execução de ação previamente aprovada pelo administrador.",
+        stream: true,
+        confirmed_action: {
+          token: pending.confirmation_token,
+          tool: pending.tool,
+          args: pending.args,
+        },
+      },
+      {
+        onTool: (name) => setStatusHint(`Executando ${name}…`),
+        onDone: (actions) => {
+          setMessages((m) => [...m, {
+            role: "assistant",
+            content: actions?.some((a: any) => a.result?.ok)
+              ? "Ação confirmada e executada com sucesso."
+              : "A ação não foi executada.",
+            actions,
+          }]);
+        },
+      },
+    );
+
+    setStatusHint(null);
+    setLoading(false);
+    if (error) {
+      setMessages((m) => [...m, { role: "assistant", content: error }]);
+    }
+  }, [pendingConfirmation, loading, isAdmin, messages]);
 
   const clearChat = () => {
     setMessages([]);
@@ -350,6 +409,31 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
           )}
         </div>
       </ScrollArea>
+
+          {pendingConfirmation && isAdmin && (
+            <div className="mx-4 mb-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4 space-y-3" role="alertdialog" aria-label="Confirmação de ação administrativa">
+              <div>
+                <p className="font-semibold text-sm">Confirmação necessária</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  A Ella solicitou uma ação administrativa. Revise os dados antes de executar.
+                </p>
+              </div>
+              <div className="rounded-lg bg-background/70 p-3 text-xs">
+                <p><span className="font-semibold">Ação:</span> {pendingConfirmation.tool}</p>
+                <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words text-muted-foreground">
+                  {JSON.stringify(pendingConfirmation.args, null, 2)}
+                </pre>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button type="button" variant="ghost" size="sm" onClick={() => { setPendingConfirmation(null); setStatusHint(null); }}>
+                  Cancelar
+                </Button>
+                <Button type="button" size="sm" onClick={confirmPendingAction} disabled={loading}>
+                  Confirmar e executar
+                </Button>
+              </div>
+            </div>
+          )}
 
       <div className="border-t border-border/50 p-3">
         <div className="relative flex items-end gap-2">

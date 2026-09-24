@@ -24,6 +24,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const secureRandom = () => {
+  const values = new Uint32Array(1);
+  crypto.getRandomValues(values);
+  return values[0] / 0x100000000;
+};
+
 interface Metric {
   label: string;
   value: string | number;
@@ -115,7 +121,7 @@ export function DeploymentStatusPanel() {
                     metric.status === 'healthy' ? 'bg-emerald-500' : 
                     metric.status === 'warning' ? 'bg-amber-500' : 'bg-destructive'
                   }`} 
-                  style={{ width: `${Math.random() * 40 + 60}%` }}
+                  style={{ width: `${secureRandom() * 40 + 60}%` }}
                 />
               </div>
             </CardContent>

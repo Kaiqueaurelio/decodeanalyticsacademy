@@ -227,7 +227,7 @@ Para a apostila enviada, gere DOIS artefatos:
       { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (e) {
     console.error("apostila-summary error", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }),
+    return new Response(JSON.stringify({ error: "Não foi possível gerar o resumo da apostila." }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 });

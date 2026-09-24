@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -21,7 +23,7 @@ export function StudyHeatmap({ data = [] }: HeatmapProps) {
       
       result.push({
         date: dateStr,
-        count: existing ? existing.count : (Math.random() > 0.7 ? Math.floor(Math.random() * 5) + 1 : 0),
+        count: existing ? existing.count : (secureRandom() > 0.7 ? Math.floor(secureRandom() * 5) + 1 : 0),
         dayName: d.toLocaleDateString('pt-BR', { weekday: 'short' }),
         formattedDate: d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
       });

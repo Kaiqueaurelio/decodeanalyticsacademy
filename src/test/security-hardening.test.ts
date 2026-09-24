@@ -15,6 +15,14 @@ describe('security hardening regression guards', () => {
     expect(code).toContain("status: 410");
   });
 
+  it('routes admin role changes through the guarded role-management RPC', () => {
+    const code = source('src/components/admin/AdminUserManagement.tsx');
+    expect(code).toContain("supabase.rpc");
+    expect(code).toMatch(/supabase\.rpc[\s\S]{0,80}['"]admin_update_user_role['"]/);
+    expect(code).not.toContain(".from('user_roles').delete()");
+    expect(code).not.toContain(".from('user_roles').insert");
+  });
+
   it('keeps admin user creation behind the shared admin guard and scoped CORS', () => {
     const code = source('supabase/functions/admin-create-user/index.ts');
 
@@ -44,6 +52,21 @@ describe('security hardening regression guards', () => {
     expect(hook).toContain('id,title,description,image_url,link_url,ad_type,position,display_duration');
   });
 
+  it('serializes last-admin role mutations', () => {
+    const migration = source('supabase/migrations/20260920160500_serialize_admin_role_mutations.sql');
+    expect(migration).toContain("pg_advisory_xact_lock(hashtextextended('decode_admin_role_guard', 0))");
+    expect(migration).toContain('cannot remove the last administrator');
+    expect(migration).toContain('cannot delete the last administrator');
+  });
+
+  it('keeps student notes private and owner-scoped', () => {
+    const migration = source('supabase/migrations/20260920160400_restore_student_notes_rls.sql');
+    expect(migration).toContain('CREATE POLICY "Users can view own student notes"');
+    expect(migration).toContain('USING (auth.uid() = user_id)');
+    expect(migration).toContain('WITH CHECK (auth.uid() = user_id)');
+    expect(migration).toContain('REVOKE ALL ON public.student_notes FROM anon;');
+  });
+
   it('routes dynamic ad links through the shared safe-navigation helper', () => {
     const popup = source('src/components/AdPopup.tsx');
     const banner = source('src/components/AdBanner.tsx');
@@ -65,6 +88,13 @@ describe('security hardening regression guards', () => {
     expect(getSafeNavigationUrl('https://example.com/path')).toBe('https://example.com/path');
   });
 
+  it('rejects unsafe URL schemes when exporting PDF links', () => {
+    const pdf = source('src/lib/apostila-pdf.ts');
+    expect(pdf).toContain('function safePdfUrl');
+    expect(pdf).toContain("if (/^(javascript|data|vbscript|file):/i.test(url)) return '#';");
+    expect(pdf).toContain('safePdfUrl(href)');
+  });
+
   it('keeps Mermaid in strict mode and sanitizes generated SVG', () => {
     const mermaid = source('src/components/MermaidDiagram.tsx');
     expect(mermaid).toContain("securityLevel: 'strict'");
@@ -80,6 +110,13 @@ describe('security hardening regression guards', () => {
     expect(gate).not.toContain("sessionStorage.setItem(STORAGE_KEY, 'unlocked');\n\n    /*");
   });
 
+  it('allows a valid session to configure biometric unlock', () => {
+    const toggle = source('src/components/BiometricToggle.tsx');
+    expect(toggle).not.toContain('Biometria temporariamente desativada');
+    expect(toggle).toContain('await enableBiometric({');
+    expect(toggle).toContain("toast.success('Biometria ativada!");
+  });
+
   it('keeps cache invalidation aligned to the build without deleting user storage', () => {
     const html = source('index.html');
     const cacheBuster = source('src/lib/cacheBuster.ts');
@@ -93,9 +130,11 @@ describe('security hardening regression guards', () => {
     expect(vite).toContain('buildVersion,');
   });
 
-  it('protects every admin external-app link opened in a new tab', () => {
+  it('keeps Ella navigation inside the application instead of opening uncontrolled external tabs', () => {
     const builder = source('src/components/AdsChatBuilder.tsx');
-    expect(builder).toContain("window.open('https://decodeanalyticsacademydev.vercel.app', '_blank', 'noopener,noreferrer')");
+    expect(builder).toContain('const PAGE_TARGETS');
+    expect(builder).toContain("path: '/admin'");
+    expect(builder).not.toContain('window.open(');
   });
 
   it('hardens the public technology news feed fetcher', () => {
@@ -150,6 +189,9 @@ describe('security hardening regression guards', () => {
     const deleteAccount = source('supabase/functions/delete-account/index.ts');
     const setPassword = source('supabase/functions/admin-set-password/index.ts');
     const exportData = source('supabase/functions/export-user-data/index.ts');
+    const cover = source('supabase/functions/generate-apostila-cover/index.ts');
+    const promoMedia = source('supabase/functions/promo-media/index.ts');
+    const authGuard = source('supabase/functions/_shared/auth-guard.ts');
 
     for (const code of [deleteAccount, setPassword, exportData]) {
       expect(code).toContain('requireUser(req, corsHeaders');
@@ -158,6 +200,17 @@ describe('security hardening regression guards', () => {
       expect(code).not.toContain('error: (e as Error).message');
     }
     expect(setPassword).toContain('requireAdmin: true');
+    expect(authGuard).toContain('.from("user_roles")');
+    expect(authGuard).toContain('.eq("role", "admin")');
+    for (const code of [cover, promoMedia]) {
+      expect(code).toContain('requireUser(req,');
+      expect(code).toContain('requireAdmin: true');
+      expect(code).not.toContain('error: (e as Error).message');
+      expect(code).not.toContain('error: error?.message');
+    }
+    expect(cover).toContain('req.method !== "POST"');
+    expect(promoMedia).toContain('MAX_UPLOAD_BYTES');
+    expect(promoMedia).toContain('ALLOWED_IMAGE_TYPES');
     expect(deleteAccount).toContain('body.confirmation !== "EXCLUIR"');
     const auditMigration = source('supabase/migrations/20260821230000_security_audit_rpc_hardening.sql');
     expect(auditMigration).toContain('SECURITY DEFINER');
@@ -173,7 +226,8 @@ describe('security hardening regression guards', () => {
     const sql = source('supabase/migrations/20260825050000_profile_admin_fields_hardening.sql');
 
     expect(auth).toContain(".from('user_roles').select('role')");
-    expect(auth).toContain('const adminValue = Boolean(adminRes.data);');
+    expect(auth).toContain("supabase.rpc('has_role', { _user_id: userId, _role: 'admin' } as any)");
+    expect(auth).toContain('const adminValue = adminRoleRes.data === true || Boolean(adminRes.data);');
     expect(auth).not.toContain("account_type === 'admin'");
     expect(sql).toContain('prevent_profile_admin_field_escalation');
     expect(sql).toContain("NEW.account_type IS DISTINCT FROM OLD.account_type");
@@ -216,6 +270,71 @@ describe('security hardening regression guards', () => {
     expect(hook).toContain('Mantém fallback somente para falhas transitórias');
     const auditComponent = source('src/components/admin/AdminUserManagement.tsx');
     expect(auditComponent).toContain('supabase.rpc');
-    expect(auditComponent).toMatch(/supabase\.rpc[\s\S]{0,40}['"]log_admin_audit['"]/);
+    expect(auditComponent).toMatch(/supabase\.rpc[\s\S]{0,80}['"]admin_update_user_role['"]/);
   });
+  it('never authorizes an admin route from mutable local role cache', () => {
+    const auth = source('src/hooks/useAuth.tsx');
+    expect(auth).toContain('Nunca usamos o cache local como autorização');
+    expect(auth).toContain('setIsAdmin(false);');
+    expect(auth).toContain('setRoleChecked(false);');
+    expect(auth).toContain('void checkRoles(nextUser.id);');
+  });
+
+  it('does not bypass RA rate limiting or email confirmation through a 401 fallback', () => {
+    const login = source('src/pages/LoginPage.tsx');
+    expect(login).toContain('authResult.status === 503');
+    expect(login).toContain('authResult.status === 408');
+    expect(login).toContain('authResult.status === 0');
+    expect(login).not.toContain('authResult.status === 401');
+    expect(login).toContain("code === 'email_not_confirmed'");
+  });
+
+  it('fails closed when admin user creation cannot persist profile or role', () => {
+    const edge = source('supabase/functions/admin-create-user/index.ts');
+    expect(edge).toContain('cleanup after profile failure failed');
+    expect(edge).toContain('cleanup after role failure failed');
+    expect(edge).toContain("return json({ error: 'Não foi possível concluir o cadastro do usuário.' }, 500);");
+  });
+
+  it('keeps weekly simulado grading and lifecycle server-side', () => {
+    const page = source('src/pages/SimuladoPage.tsx');
+    const generation = source('supabase/functions/generate-weekly-simulado/index.ts');
+    const lifecycle = source('supabase/migrations/20260920030000_harden_weekly_simulado_lifecycle.sql');
+    const reveal = source('supabase/migrations/20260920031000_harden_weekly_simulado_reveal.sql');
+    const answer = source('supabase/migrations/20260920032000_harden_weekly_simulado_answer_rpc.sql');
+    const quizOrdering = source('supabase/migrations/20260920160030_harden_submit_quiz_ordering.sql');
+
+    expect(page).toContain("supabase.functions.invoke('generate-weekly-simulado'");
+    expect(page).toContain("supabase.rpc('finish_weekly_simulado'");
+    expect(page).not.toContain(".from('weekly_simulado_answers' as any)\n        .insert");
+    expect(page).not.toContain(".from('weekly_simulados').update");
+    expect(generation).toContain('const restart = body?.restart === true;');
+    expect(generation).toContain('weeklyExisting.status === "finished"');
+    expect(lifecycle).toContain('REVOKE INSERT, UPDATE, DELETE ON public.weekly_simulado_answers FROM authenticated;');
+    expect(lifecycle).toContain('CREATE OR REPLACE FUNCTION public.finish_weekly_simulado');
+    expect(reveal).toContain('CREATE OR REPLACE FUNCTION public.get_simulado_answer_reveals');
+    expect(answer).toContain("IF v_row.status <> 'in_progress' THEN");
+    expect(answer).toContain("REVOKE ALL ON FUNCTION public.answer_simulado_question(uuid, text) FROM PUBLIC, anon;");
+    expect(quizOrdering).toContain('_expected_ids text[];');
+    expect(quizOrdering).toContain('_submitted_ids text[];');
+    expect(quizOrdering).toContain('jsonb_array_length(_ans) = jsonb_array_length');
+    expect(quizOrdering).toContain('IF _expected_ids = _submitted_ids THEN');
+    const adminRoleGuard = source('supabase/migrations/20260920160130_guard_last_admin.sql');
+    expect(adminRoleGuard).toContain('v_admin_count integer');
+    expect(adminRoleGuard).toContain('cannot remove the last administrator');
+  });
+
+  it('keeps gamification mutations behind server-side RPCs', () => {
+    const hook = source('src/hooks/useGamification.tsx');
+    const migration = source('supabase/migrations/20260920017000_harden_gamification_mutations.sql');
+    expect(hook).toContain("supabase.rpc('record_study_streak'");
+    expect(hook).toContain("supabase.rpc('award_badge'");
+    expect(hook).not.toContain("from('study_streaks').upsert");
+    expect(hook).not.toContain("from('user_badges').insert");
+    expect(migration).toContain('revoke insert, update, delete on table public.user_xp from authenticated;');
+    expect(migration).toContain('revoke insert, update, delete on table public.user_badges from authenticated;');
+    expect(migration).toContain('revoke insert, update, delete on table public.study_streaks from authenticated;');
+    expect(migration).toContain("America/Sao_Paulo");
+  });
+
 });

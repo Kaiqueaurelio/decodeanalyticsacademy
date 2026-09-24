@@ -1,7 +1,8 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import "./index.css";
+import "./styles/apostila-responsive.css";
 import ErrorBoundary from "./components/ErrorBoundary";
+import App from "./App";
 import { installPerfMonitor } from "./lib/perf-monitor";
 import { installRuntimeLogger } from "./lib/runtime-logs";
 import { checkAndCleanOldCaches } from "./lib/cacheBuster";
@@ -51,36 +52,91 @@ window.addEventListener("unhandledrejection", (event) => {
     origWarn(...args);
   };
 
-  const TRUSTED_ORIGIN_RES = [
-    /lovable(project)?\.app$/i,
-    /lovableproject\.com$/i,
-    /gpteng\.co$/i,
-    /^https?:\/\/localhost(:\d+)?$/i,
-    new RegExp(`^${window.location.origin}$`, "i"),
-  ];
+  const TRUSTED_ORIGINS = new Set([
+    "https://decodeanalyticsacademy.lovable.app",
+    "https://decodeanalyticsacademy.vercel.app",
+    "https://id-preview--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app",
+    "https://decodeanalyticsacademy.com.br",
+    "https://www.decodeanalyticsacademy.com.br",
+    "http://localhost:8080",
+    "http://localhost:5173",
+    "http://127.0.0.1:8080",
+    window.location.origin,
+  ]);
   window.addEventListener(
     "message",
     (e) => {
-      try {
-        const origin = e.origin || "";
-        if (!origin) return;
-        if (!TRUSTED_ORIGIN_RES.some((re) => re.test(origin))) {
-          e.stopImmediatePropagation();
-        }
-      } catch {
-        // ignore
+      const origin = e.origin || "";
+      if (!origin || !TRUSTED_ORIGINS.has(origin)) {
+        e.stopImmediatePropagation();
       }
     },
     true,
   );
 })();
 
-createRoot(document.getElementById("root")!).render(
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+  throw new Error("Decode Analytics Academy: elemento #root não encontrado.");
+}
+
+const root = createRoot(rootElement);
+
+const renderBootError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  root.render(
+    <main style={{
+      minHeight: "100dvh",
+      display: "grid",
+      placeItems: "center",
+      padding: "24px",
+      background: "#050508",
+      color: "#f5f5f5",
+      fontFamily: "system-ui, sans-serif",
+      textAlign: "center",
+    }}>
+      <section style={{ maxWidth: "560px" }}>
+        <h1 style={{ fontSize: "24px", marginBottom: "12px" }}>Decode Analytics Academy</h1>
+        <p style={{ opacity: 0.75, lineHeight: 1.6 }}>
+          O aplicativo encontrou um erro ao iniciar. Recarregue a página para tentar novamente.
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          style={{
+            marginTop: "20px",
+            border: 0,
+            borderRadius: "12px",
+            padding: "12px 20px",
+            background: "#e8ff47",
+            color: "#050508",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Recarregar
+        </button>
+        <pre style={{
+          marginTop: "20px",
+          textAlign: "left",
+          whiteSpace: "pre-wrap",
+          fontSize: "12px",
+          opacity: 0.55,
+        }}>{message}</pre>
+      </section>
+    </main>,
+  );
+};
+
+root.render(
   <ErrorBoundary>
     <App />
   </ErrorBoundary>,
 );
-// Primeiro invalida artefatos de outra versão; depois registra o worker atual.
-// Essa ordem evita que um worker antigo reassuma o controle durante a limpeza.
-void checkAndCleanOldCaches().finally(() => registerServiceWorker());
-// Trigger deploy Tue Aug 18 23:50:52 UTC 2026
+
+// A limpeza de cache/service worker nunca participa do boot crítico.
+// O app já está visível antes de qualquer operação de recuperação de PWA.
+window.setTimeout(() => {
+  void checkAndCleanOldCaches().finally(() => registerServiceWorker());
+}, 5000);
