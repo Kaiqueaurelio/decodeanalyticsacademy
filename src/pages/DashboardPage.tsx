@@ -232,29 +232,9 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     
-    // Marcar do 1º ao 5º semestre como concluído e maximizar gamificação para admin
-    const markCompleted = async () => {
-      try {
-        await supabase.rpc('force_complete_semesters_upto_five', { _user_id: user.id });
-        // RPC para o 6º ao 8º semestre removida para permitir progresso real nessas apostilas
-        // await (supabase.rpc as any)('complete_semesters_six_to_eight', { _user_id: user.id });
-        
-        // Maximizar para administrador
-        if (isAdmin) {
-          // Maximizar para administrador (XP real: 9900/Lv99/365d)
-          const callAdminRpc = supabase.rpc as unknown as (
-            functionName: string,
-            args: { _user_id: string },
-          ) => Promise<{ error: Error | null }>;
-          const { error: maximizeError } = await callAdminRpc('maximize_user_gamification', { _user_id: user.id });
-          if (maximizeError) throw maximizeError;
-          gamification.loadAll();
-        }
-      } catch (e) {
-        console.error("Erro ao sincronizar progresso acadêmico:", e);
-      }
-    };
-    markCompleted();
+    // O progresso acadêmico é calculado a partir das atividades reais do aluno.
+    // Não marque semestres automaticamente: isso distorce os indicadores de estudo.
+
 
     const seen = localStorage.getItem('decode_onboarding_done');
     if (!seen) setShowOnboarding(true);
