@@ -366,53 +366,51 @@ export default function LoginPage() {
       return;
     }
 
-    // Todos os logins tentam primeiro a Edge Function, que aplica o rate limit
-    // persistente e resolve o e-mail sem expor o mapeamento ao cliente.
-    let authResult = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
+    // E-mail usa o Supabase Auth diretamente. RA usa exclusivamente a Edge Function,
+    // que resolve o e-mail interno e aplica o rate limit. Nunca fazemos uma segunda
+    // tentativa de senha depois de uma resposta de autenticação.
+    let authResult: {
+      data: any;
+      message: string | null;
+      code?: string;
+      status: number;
+    };
 
-    // Se a função estiver temporariamente inacessível ou rejeitar um RA que já
-    // existe no Auth, tentamos o mesmo login diretamente no projeto ativo.
-    // A senha continua sendo validada pelo Supabase; HTTP 429 nunca faz fallback.
-    // HTTP 429 nunca usa fallback: o bloqueio persistente deve ser respeitado.
-    const canUseDirectAuthFallback =
-      !authResult.data?.session &&
-      authResult.status !== 429 &&
-      (authResult.status === 503 ||
-        authResult.status === 408 ||
-        authResult.status === 0);
+    if (isEmail) {
+      try {
+        const { data: directData, error: directError } = await supabase.auth.signInWithPassword({
+          email: id.toLowerCase(),
+          password,
+        });
 
-    if (canUseDirectAuthFallback) {
-      const fallbackEmail = isEmail
-        ? id.toLowerCase()
-        : normalizedRa === 'G802144'
-          ? 'decoanalytics@outlook.com.br'
-          : effectiveEmail;
-      const { data: fallbackData, error: fallbackError } = await supabase.auth.signInWithPassword({
-        email: fallbackEmail,
-        password,
-      });
-      if (!fallbackError && fallbackData.session) {
-        authResult = {
-          data: { session: fallbackData.session },
-          message: null,
-          code: undefined,
-          status: 200,
-        };
-      } else if (fallbackError && /failed to fetch|network|load failed/i.test(fallbackError.message)) {
+        if (directError) {
+          const networkError = /failed to fetch|network|load failed/i.test(directError.message);
+          authResult = {
+            data: null,
+            message: networkError
+              ? 'Não foi possível conectar ao serviço de autenticação. Verifique sua conexão e tente novamente.'
+              : SECURITY_COPY.loginErrorDescription,
+            code: networkError ? 'network_error' : 'invalid_credentials',
+            status: networkError ? 0 : 401,
+          };
+        } else {
+          authResult = {
+            data: { session: directData.session },
+            message: null,
+            code: undefined,
+            status: 200,
+          };
+        }
+      } catch {
         authResult = {
           data: null,
           message: 'Não foi possível conectar ao serviço de autenticação. Verifique sua conexão e tente novamente.',
           code: 'network_error',
           status: 0,
         };
-      } else if (fallbackError) {
-        authResult = {
-          data: null,
-          message: SECURITY_COPY.loginErrorDescription,
-          code: 'invalid_credentials',
-          status: 401,
-        };
       }
+    } else {
+      authResult = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
     }
 
     const { data, message, code, status: authStatus } = authResult;
