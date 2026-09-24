@@ -98,6 +98,7 @@ import { AcademicAuditPanel } from '@/components/admin/AcademicAuditPanel';
 import { ApostilaValidationDashboard } from '@/components/admin/ApostilaValidationDashboard';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
 import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
+import { confirmCreatedApostila, saveApostilaWithRevision } from '@/lib/apostila-persistence';
 import { SECURITY_COPY } from '@/lib/security-copy';
 
 
@@ -110,6 +111,33 @@ type Apostila = Tables<'apostilas'>;
 type AdminApostila = Apostila & { saved_date?: string | null };
 type Exercise = Tables<'exercises'>;
 type Material = Tables<'materials'>;
+
+/** Atualizações administrativas também passam pelo contrato de revisão do banco. */
+async function saveExistingApostila(
+  apostilaId: string,
+  changes: { title?: string; category?: string; content: string; published?: boolean },
+) {
+  const { data: current, error: readError } = await supabase
+    .from('apostilas')
+    .select('id, title, category, content_revision, published, semester, course, saved_date')
+    .eq('id', apostilaId)
+    .maybeSingle();
+  if (readError || !current) {
+    return { data: null, error: readError || { code: 'APOSTILA_NOT_FOUND', message: 'Apostila não encontrada antes da gravação.' } };
+  }
+  const row = current as any;
+  return saveApostilaWithRevision({
+    apostilaId,
+    expectedRevision: Number(row.content_revision || 0),
+    title: changes.title ?? row.title,
+    category: changes.category ?? row.category,
+    content: changes.content,
+    published: changes.published ?? row.published,
+    semester: row.semester ?? null,
+    course: row.course ?? null,
+    savedDate: row.saved_date ?? null,
+  });
+}
 
 const SEMESTER_MAP: Record<number, string> = {
   0: 'Grade Comum / ENEM',
@@ -1202,6 +1230,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       void recordApostilaOperation({ operationId, operationType: operationSource, phase: 'insert', status: 'failed', errorCode: error.code || 'apostila_insert_failed', errorMessage: error.message });
       throw error;
     }
+    const confirmation = await confirmCreatedApostila(newApostila);
+    if (confirmation.error) {
+      void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'verify', status: 'failed', errorCode: confirmation.error.code || 'apostila_create_not_confirmed', errorMessage: confirmation.error.message });
+      throw confirmation.error;
+    }
     if (importExercises.length > 0 && newApostila) {
       const results = await Promise.all(importExercises.map(ex => adminCreateExercise({
         apostila_id: newApostila.id, question: ex.question, options: ex.options,
@@ -1247,6 +1280,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     if (error) {
       void recordApostilaOperation({ operationId, operationType: operationSource, phase: 'insert', status: 'failed', errorCode: error.code || 'ready_text_insert_failed', errorMessage: error.message });
       throw error;
+    }
+    const confirmation = await confirmCreatedApostila(newApostila);
+    if (confirmation.error) {
+      void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'verify', status: 'failed', errorCode: confirmation.error.code || 'apostila_create_not_confirmed', errorMessage: confirmation.error.message });
+      throw confirmation.error;
     }
     const validation = await runApostilaChronologyValidation(newApostila.id, operationSource);
     void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'insert', status: 'succeeded', affectedRecordIds: [newApostila.id], metadata: { validationStatus: validation?.status || 'not_available', alertCount: validation?.alert_count || 0 } });
@@ -1349,6 +1387,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       toast.error('Erro ao criar');
       return;
     }
+    const confirmation = await confirmCreatedApostila(newApostila);
+    if (confirmation.error) {
+      void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'verify', status: 'failed', errorCode: confirmation.error.code || 'apostila_create_not_confirmed', errorMessage: confirmation.error.message });
+      toast.error(confirmation.error.message);
+      return;
+    }
     const validation = await runApostilaChronologyValidation(newApostila.id, operationSource);
     void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'insert', status: 'succeeded', affectedRecordIds: [newApostila.id], metadata: { validationStatus: validation?.status || 'not_available', alertCount: validation?.alert_count || 0 } });
     if (validation?.status === 'error') toast.warning('A nova apostila foi criada com alerta cronológico. Revise antes de disponibilizar aos alunos.');
@@ -1387,10 +1431,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       metadata: { source: 'duplicate_dialog', newContentLength: newContent.length },
     });
 
-    const { error } = await supabase
-      .from('apostilas')
-      .update({ content: newContent, published: true, updated_at: new Date().toISOString() })
-      .eq('id', apostilaId);
+    const { error } = await saveExistingApostila(apostilaId, { content: newContent, published: true });
     if (error) {
       void recordApostilaOperation({
         operationId,
@@ -1469,10 +1510,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     const content = existingCompact && newCompact.includes(existingCompact)
       ? newContent
       : [existing, newContent].filter(Boolean).join('\n\n');
-    const { error } = await supabase
-      .from('apostilas')
-      .update({ content, published: true, updated_at: new Date().toISOString() })
-      .eq('id', apostilaId);
+    const { error } = await saveExistingApostila(apostilaId, { content, published: true });
     if (error) {
       void recordApostilaOperation({
         operationId,
@@ -1643,10 +1681,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     if (!editingApostila) return;
     if (!editTitle.trim()) { toast.error('O título não pode ficar vazio'); return; }
     await guardWithValidation(editContent, editTitle, async () => {
-      const { error } = await supabase
-        .from('apostilas')
-        .update({ title: editTitle.trim(), content: editContent, category: editCategory })
-        .eq('id', editingApostila.id);
+      const { error } = await saveExistingApostila(editingApostila.id, {
+        title: editTitle.trim(),
+        content: editContent,
+        category: editCategory,
+      });
       if (error) {
         console.error('[handleEditSave] erro:', error);
         toast.error('Falha ao atualizar: ' + error.message);

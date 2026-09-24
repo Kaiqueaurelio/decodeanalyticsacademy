@@ -22,25 +22,17 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error('Supabase client could not be initialized.');
 }
 
-// Consultas auxiliares da página de apostila não podem derrubar o carregamento
-// do conteúdo principal. Se exercises/apostila_pages falharem por RLS, rede ou
-// alguma diferença de schema, retornamos uma lista vazia e deixamos a apostila
-// principal continuar sendo exibida. Consultas de outras tabelas continuam
-// propagando seus erros normalmente.
+// Todas as falhas do Supabase precisam chegar ao chamador. Transformar uma falha
+// de RLS, sessão ou rede em uma lista vazia faz a interface concluir que a
+// apostila não tem páginas — e mascara a causa de conteúdo aparentemente sumir.
+// As telas de leitura já tratam fontes complementares como opcionais sem ocultar
+// o erro da consulta.
 const nativeFetch = globalThis.fetch.bind(globalThis);
-const isOptionalApostilaEndpoint = (url: string) =>
-  url.includes('/rest/v1/exercises') || url.includes('/rest/v1/apostila_pages');
 const isTransientSupabaseResponse = (response: Response) =>
   response.status === 502 || response.status === 503 || response.status === 504;
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const resilientFetch: typeof fetch = async (input, init) => {
-  const requestUrl = typeof input === 'string'
-    ? input
-    : input instanceof Request
-      ? input.url
-      : input.toString();
-
   let response: Response | null = null;
   let lastError: unknown = null;
 
@@ -61,28 +53,9 @@ const resilientFetch: typeof fetch = async (input, init) => {
     }
   }
 
-  if (response) {
-    if (!response.ok && isOptionalApostilaEndpoint(requestUrl)) {
-      console.warn(
-        '[Supabase] Consulta auxiliar de apostila indisponível; continuando sem recurso opcional:',
-        requestUrl,
-        response.status,
-      );
-      return new Response('[]', {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    return response;
-  }
+  if (response) return response;
 
   console.warn('[Supabase] Falha de rede:', lastError);
-  if (isOptionalApostilaEndpoint(requestUrl)) {
-    return new Response('[]', {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
   return new Response(
     JSON.stringify({
       message: 'Falha de rede ao consultar o Supabase.',
@@ -105,16 +78,3 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   },
 });
-
-// A árvore estruturada é complementar ao conteúdo principal da apostila.
-// Se esse RPC falhar (por autenticação, RLS, rede ou estrutura incompleta), a tela
-// ainda precisa conseguir exibir `apostilas.content` e `apostila_pages`.
-// O tratamento fica restrito a este RPC; os demais RPCs continuam propagando erros.
-const originalRpc = supabase.rpc.bind(supabase);
-(supabase as typeof supabase & { rpc: typeof supabase.rpc }).rpc = ((fn: string, args?: unknown, options?: unknown) => {
-  const result = originalRpc(fn as never, args as never, options as never) as Promise<{ data: unknown; error: unknown | null }>;
-  if (fn !== 'get_apostila_reader_tree') return result as never;
-  return result.then((response) => (
-    response.error ? { data: null, error: null } : response
-  )) as never;
-}) as typeof supabase.rpc;

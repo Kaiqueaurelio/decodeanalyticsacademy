@@ -53,6 +53,32 @@ export async function saveApostilaWithRevision(draft: ApostilaPersistenceDraft) 
   return confirmSavedDraft(result, draft.apostilaId, draft);
 }
 
+/**
+ * A criação não é considerada concluída apenas porque a resposta do INSERT
+ * chegou. A leitura pelo mesmo cliente confirma que o registro e o conteúdo
+ * realmente ficaram visíveis antes de a interface anunciar sucesso.
+ */
+export async function confirmCreatedApostila(input: { id: string; title: string; content: string }) {
+  const { data, error } = await supabase
+    .from('apostilas')
+    .select('id, title, content')
+    .eq('id', input.id)
+    .maybeSingle();
+  if (error) return { data: null, error };
+  if (!data || data.title !== input.title || data.content !== input.content) {
+    return {
+      data: null,
+      error: {
+        code: 'CREATE_NOT_CONFIRMED',
+        message: 'O banco não confirmou a nova apostila. Ela não será exibida como salva.',
+        details: '',
+        hint: '',
+      },
+    };
+  }
+  return { data, error: null };
+}
+
 export async function saveApostilaPageWithRevision(draft: ApostilaPagePersistenceDraft) {
   const params = {
     _page_id: draft.pageId,

@@ -141,4 +141,27 @@ describe('revision-safe apostila persistence', () => {
       _saved_date: '2026-09-10',
     });
   });
+
+  it('só confirma uma nova apostila quando a leitura posterior encontra o mesmo conteúdo', async () => {
+    const query: any = { select: vi.fn(), eq: vi.fn(), maybeSingle: maybeSingleMock };
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    fromMock.mockReturnValue(query);
+    maybeSingleMock.mockResolvedValueOnce({ data: { id: 'book-1', title: 'Título', content: 'Conteúdo' }, error: null });
+
+    const { confirmCreatedApostila } = await import('@/lib/apostila-persistence');
+    expect((await confirmCreatedApostila({ id: 'book-1', title: 'Título', content: 'Conteúdo' })).error).toBeNull();
+  });
+
+  it('não confirma a criação se a leitura posterior não recuperar o conteúdo enviado', async () => {
+    const query: any = { select: vi.fn(), eq: vi.fn(), maybeSingle: maybeSingleMock };
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    fromMock.mockReturnValue(query);
+    maybeSingleMock.mockResolvedValueOnce({ data: { id: 'book-1', title: 'Título', content: '' }, error: null });
+
+    const { confirmCreatedApostila } = await import('@/lib/apostila-persistence');
+    const result = await confirmCreatedApostila({ id: 'book-1', title: 'Título', content: 'Conteúdo' });
+    expect(result.error).toMatchObject({ code: 'CREATE_NOT_CONFIRMED' });
+  });
 });
