@@ -10,6 +10,8 @@ type XP = { xp_points: number; level: number };
 type StudyGoal = { id: string; title: string; description: string; progress: number; total: number; type: 'chapter' | 'exercise' | 'streak' | 'custom'; completed: boolean; metric: string; frequency?: string; category?: string };
 type Milestone = { id: string; title: string; description: string | null; category: string; achieved_at: string | null; requirement_type: string; requirement_value: number; reward_type: string | null; icon?: string };
 type StudyHistory = { date: string; xp_gained: number; chapters_completed: number; exercises_completed: number; time_spent_minutes: number };
+type StreakRpcResult = { current_streak?: number; longest_streak?: number; last_study_date?: string | null };
+type BadgeAwardResult = { awarded?: boolean; badge_id?: string | null };
 
 
 export function useGamification() {
@@ -99,7 +101,7 @@ export function useGamification() {
 
   const updateStreak = useCallback(async () => {
     if (!user) return;
-    const { data: updatedStreak, error } = await supabase.rpc('record_study_streak', {
+    const { data: updatedStreak, error } = await (supabase.rpc as any)('record_study_streak', {
       _user_id: user.id,
     });
 
@@ -108,7 +110,7 @@ export function useGamification() {
       return;
     }
 
-    const row = Array.isArray(updatedStreak) ? updatedStreak[0] : updatedStreak;
+    const row = (Array.isArray(updatedStreak) ? updatedStreak[0] : updatedStreak) as StreakRpcResult;
     const newCurrent = Number(row?.current_streak ?? 0);
     const newLongest = Number(row?.longest_streak ?? 0);
     const newLastDate = typeof row?.last_study_date === 'string' ? row.last_study_date : null;
@@ -138,8 +140,9 @@ export function useGamification() {
     const { data: awardResult, error } = await supabase.rpc('award_badge', {
       _criteria: criteria,
     });
-    if (!error && awardResult?.awarded) {
-      setUserBadges(prev => [...prev, { id: awardResult.badge_id || '', badge_id: badge.id, earned_at: new Date().toISOString() }]);
+    const result = awardResult as BadgeAwardResult | null;
+    if (!error && result?.awarded) {
+      setUserBadges(prev => [...prev, { id: result.badge_id || '', badge_id: badge.id, earned_at: new Date().toISOString() }]);
       await loadAll();
       toast.success(`🏆 Conquista: ${badge.icon} ${badge.name}!`);
     }

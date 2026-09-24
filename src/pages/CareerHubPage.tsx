@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { BriefcaseBusiness, CheckCircle2, ChevronRight, ExternalLink, Filter, Loader2, MapPin, Save, Sparkles, Target, UserRound } from 'lucide-react';
+import { BriefcaseBusiness, CheckCircle2, ChevronRight, ExternalLink, Filter, Loader2, MapPin, Save, Sparkles, Target, UserRound, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -188,11 +188,11 @@ export default function CareerHubPage() {
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">
-        {[
+        {([
           ['Vagas acompanhadas', applications.length, Save],
           ['Em processo', applications.filter((a) => ['applied','screening','interview','offer'].includes(a.status)).length, Target],
           ['Entrevistas', applications.filter((a) => a.status === 'interview').length, CheckCircle2],
-        ].map(([label, value, Icon]) => <Card key={String(label)} className="p-4"><div className="flex items-center gap-3"><div className="rounded-lg bg-primary/10 p-2.5 text-primary"><Icon className="h-4 w-4" /></div><div><p className="text-xl font-bold">{String(value)}</p><p className="text-xs text-muted-foreground">{String(label)}</p></div></div></Card>)}
+        ] as Array<[string, number, LucideIcon]>).map(([label, value, Icon]) => <Card key={label} className="p-4"><div className="flex items-center gap-3"><div className="rounded-lg bg-primary/10 p-2.5 text-primary"><Icon className="h-4 w-4" /></div><div><p className="text-xl font-bold">{value}</p><p className="text-xs text-muted-foreground">{label}</p></div></div></Card>)}
       </section>
 
       <Card className="p-5 sm:p-6">

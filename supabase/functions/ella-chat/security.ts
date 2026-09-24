@@ -3,6 +3,7 @@
 // Princípios: Zero Trust, RBAC, least privilege e default deny.
 // Nada aqui depende da conversa, do prompt ou de dados enviados pelo cliente:
 // a decisão usa apenas o contexto derivado do token e do banco (papel real).
+declare const Deno: any;
 
 /** Ferramentas liberadas para qualquer usuário autenticado (leitura / dados próprios). */
 export const STUDENT_TOOLS = new Set<string>([
@@ -85,7 +86,7 @@ export function isHighImpactTool(name: string): boolean {
 function base64Url(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/g, "");
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
 function fromBase64Url(value: string): Uint8Array {
