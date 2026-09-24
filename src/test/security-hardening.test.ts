@@ -110,6 +110,13 @@ describe('security hardening regression guards', () => {
     expect(gate).not.toContain("sessionStorage.setItem(STORAGE_KEY, 'unlocked');\n\n    /*");
   });
 
+  it('allows a valid session to configure biometric unlock', () => {
+    const toggle = source('src/components/BiometricToggle.tsx');
+    expect(toggle).not.toContain('Biometria temporariamente desativada');
+    expect(toggle).toContain('await enableBiometric({');
+    expect(toggle).toContain("toast.success('Biometria ativada!");
+  });
+
   it('keeps cache invalidation aligned to the build without deleting user storage', () => {
     const html = source('index.html');
     const cacheBuster = source('src/lib/cacheBuster.ts');
