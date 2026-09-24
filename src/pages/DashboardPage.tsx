@@ -307,7 +307,7 @@ export default function DashboardPage() {
       />
 
       <div className={`flex min-h-screen flex-col transition-[padding] duration-300 ease-out ${sidebarCollapsed ? 'lg:pl-[84px]' : 'lg:pl-[264px]'}`}>
-        <DashboardTopbar hideSearchOnMobile={true} />
+        <DashboardTopbar hideSearchOnMobile={false} />
 
         <motion.main
           initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
