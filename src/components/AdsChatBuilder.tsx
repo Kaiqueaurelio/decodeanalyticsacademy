@@ -31,7 +31,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { supabase as supabaseTyped } from '@/integrations/supabase/client';
+import { supabase as supabaseTyped, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AdImageUploadButton } from './AdImageUploadButton';
 
@@ -416,14 +416,14 @@ export function AdsChatBuilder() {
     try {
       const { getCurrentAccessToken } = await import('@/lib/auth-session');
       const accessToken = getCurrentAccessToken();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-direct`;
+      const url = `${SUPABASE_URL}/functions/v1/gemini-direct`;
       const recent = messagesRef.current.slice(-10).map((m) => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.text }));
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken ?? ''}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
           systemPrompt: [
