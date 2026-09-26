@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -62,13 +62,13 @@ export function AIProviderSettings() {
     try {
       const { getCurrentAccessToken } = await import('@/lib/auth-session');
       const accessToken = getCurrentAccessToken();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-direct`;
+      const url = `${SUPABASE_URL}/functions/v1/gemini-direct`;
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken ?? ''}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
           systemPrompt: 'Você é um assistente de teste. Responda de forma curta.',

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -115,13 +115,13 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
     try {
       const { getCurrentAccessToken } = await import('@/lib/auth-session');
       const accessToken = getCurrentAccessToken();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/apostila-chat`;
+      const url = `${SUPABASE_URL}/functions/v1/apostila-chat`;
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken ?? ''}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
           apostilaId,
