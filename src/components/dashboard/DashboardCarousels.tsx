@@ -137,7 +137,7 @@ export function ApostilasReadingCarousel({ apostilas, exerciseCounts }: Props) {
                           <button
                             key={apostila.id}
                             type="button"
-                            onClick={() => navigate(`/apostila/${apostila.id}`)}
+                            onClick={() => navigate(`/reader/${apostila.id}`)}
                             className="group flex w-full items-center gap-3 rounded-xl border border-border/50 bg-card/70 px-3 py-2.5 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
                           >
                             <FileText className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" strokeWidth={1.8} />

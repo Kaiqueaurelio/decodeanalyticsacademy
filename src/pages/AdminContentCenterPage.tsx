@@ -21,7 +21,8 @@ import { toast } from 'sonner';
 import {
   ArrowLeft, FileText, Loader2, Pencil, Trash2, Eye, EyeOff, Users, Search, AlertTriangle, Plus,
 } from 'lucide-react';
-import { getApostilaPageSavedDate, getLocalDateIso } from '@/lib/apostila-pages';
+import { createApostilaPage, getApostilaPageSavedDate, getLocalDateIso } from '@/lib/apostila-pages';
+import { saveApostilaPageWithRevision } from '@/lib/apostila-persistence';
 import { cn } from '@/lib/utils';
 
 interface PageRow {
@@ -33,6 +34,7 @@ interface PageRow {
   saved_date: string | null;
   created_at: string;
   updated_at: string;
+  content_revision: number;
 }
 
 interface ApostilaRow {
@@ -70,7 +72,7 @@ export default function AdminContentCenterPage() {
     queryFn: async () => {
       const [apostilasRes, pagesRes] = await Promise.all([
         supabase.from('apostilas').select('id,title,category,published,content,updated_at').order('title'),
-        supabase.from('apostila_pages').select('id,apostila_id,title,content,position,saved_date,created_at,updated_at').order('position'),
+        supabase.from('apostila_pages').select('id,apostila_id,title,content,position,saved_date,created_at,updated_at,content_revision').order('position'),
       ]);
       if (apostilasRes.error) throw apostilasRes.error;
       if (pagesRes.error) throw pagesRes.error;
@@ -94,17 +96,22 @@ export default function AdminContentCenterPage() {
   });
 
   const savePage = useMutation({
-    mutationFn: async (payload: { id: string; title: string; content: string }) => {
-      const { error } = await supabase
-        .from('apostila_pages')
-        .update({ title: payload.title, content: payload.content, saved_date: getLocalDateIso() })
-        .eq('id', payload.id);
+    mutationFn: async (payload: { page: PageRow; title: string; content: string }) => {
+      const { error } = await saveApostilaPageWithRevision({
+        pageId: payload.page.id,
+        apostilaId: payload.page.apostila_id,
+        expectedRevision: payload.page.content_revision ?? 0,
+        title: payload.title,
+        content: payload.content,
+        savedDate: getLocalDateIso(),
+      });
       if (error) throw error;
     },
     onSuccess: () => {
       toast.success('Página salva');
       setEditing(null);
       qc.invalidateQueries({ queryKey: ['admin-content-center'] });
+      qc.invalidateQueries({ queryKey: ['apostilas'] });
     },
     onError: (e: unknown) => toast.error(`Não deu para salvar: ${(e as Error).message}`),
   });
@@ -144,17 +151,12 @@ export default function AdminContentCenterPage() {
 
   const createPage = useMutation({
     mutationFn: async (apostilaId: string) => {
-      const position = (data?.pages.filter((p) => p.apostila_id === apostilaId).length || 0) + 1;
-      const { data: inserted, error } = await supabase
-        .from('apostila_pages')
-        .insert({ apostila_id: apostilaId, title: `Nova Página — ${formatDate(getLocalDateIso())}`, content: '', position, saved_date: getLocalDateIso() })
-        .select('id,apostila_id,title,content,position,saved_date,created_at,updated_at')
-        .single();
-      if (error) throw error;
+      const inserted = await createApostilaPage(apostilaId);
       return inserted as PageRow;
     },
     onSuccess: (page) => {
       qc.invalidateQueries({ queryKey: ['admin-content-center'] });
+      qc.invalidateQueries({ queryKey: ['apostilas'] });
       setEditing(page);
       setDraft('');
       setDraftTitle(page.title);
@@ -383,7 +385,7 @@ export default function AdminContentCenterPage() {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setEditing(null)}>Cancelar</Button>
             <Button
-              onClick={() => editing && savePage.mutate({ id: editing.id, title: draftTitle, content: draft })}
+              onClick={() => editing && savePage.mutate({ page: editing, title: draftTitle, content: draft })}
               disabled={savePage.isPending}
             >
               {savePage.isPending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : null} Salvar

@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { SEMESTER_OPTIONS } from '@/lib/subject-semester-map';
+import { confirmCreatedApostila } from '@/lib/apostila-persistence';
 
 interface QuickCreateApostilaDialogProps {
   open: boolean;
@@ -77,6 +78,9 @@ export function QuickCreateApostilaDialog({
 
     setLoading(true);
     try {
+      const initialContent = template === 'template'
+        ? '# ' + title.trim() + '\n\nComece a escrever aqui...'
+        : '';
       const { data, error } = await supabase
         .from('apostilas')
         .insert({
@@ -85,14 +89,19 @@ export function QuickCreateApostilaDialog({
           semester: semester === 'none' ? null : parseInt(semester),
           published: false,
           status: 'bloqueada',
-          content: template === 'template' 
-            ? '# ' + title.trim() + '\n\nComece a escrever aqui...' 
-            : '',
+          content: initialContent,
         })
         .select('id')
         .single();
 
       if (error) throw error;
+
+      const confirmation = await confirmCreatedApostila({
+        id: data.id,
+        title: title.trim(),
+        content: initialContent,
+      });
+      if (confirmation.error) throw confirmation.error;
 
       toast.success('✓ Caderno criado com sucesso');
       onOpenChange(false);

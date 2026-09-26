@@ -595,13 +595,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           && issue.code !== 'page_dates_out_of_order'
           && issue.code !== 'page_content_dates_out_of_order'
         ));
-        const shouldPublish = published || !hasBlockingChronologyIssue;
+        // A cronologia é uma verificação editorial, não uma razão para tornar
+        // invisível uma página cujo salvamento já foi confirmado pelo banco.
+        // O aviso continua sendo exibido, mas alunos e administradores passam
+        // a enxergar a página salva imediatamente.
+        const shouldPublish = true;
         const { error: publishError } = await supabase
           .from('apostilas')
           .update({
-            // Um alerta editorial não pode retirar do aluno uma apostila já
-            // publicada, nem sobrescrever sua visibilidade com estado local antigo.
-            ...(!hasBlockingChronologyIssue ? { published: true } : {}),
+            published: true,
+            status: 'liberada',
             updated_at: savedAt,
           })
           .eq('id', id)
@@ -705,7 +708,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       title: title.trim() || 'Sem título',
       category,
       content,
-      published: content.trim().length > 0 && chronology.status !== 'error' ? true : published,
+      // Conteúdo confirmado não pode ficar oculto apenas por um alerta de
+      // cronologia. O alerta segue registrado para revisão do administrador.
+      published: content.trim().length > 0 ? true : published,
       semester,
       course: course.length ? course : null,
       saved_date: savedDate || getLocalDateIso(),
@@ -772,7 +777,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       localStorage.removeItem(`apostila_backup_${id}_main`);
     }
     setContentRevision(Number((savedApostila as any)?.content_revision ?? contentRevision + 1));
-    if (content.trim().length > 0 && chronology.status !== 'error') setPublished(true);
+    if (content.trim().length > 0) setPublished(true);
     setLastSavedAt(new Date());
     setApostilas((prev) =>
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))

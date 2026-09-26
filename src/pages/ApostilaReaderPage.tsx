@@ -784,7 +784,7 @@ export default function ApostilaReaderPage() {
           {readerError ? 'Não foi possível carregar o material' : 'Material em fase de estruturação'}
         </h1>
         <p className="mt-4 text-muted-foreground leading-relaxed">
-          {readerError || 'Esta apostila ainda não foi organizada em módulos e lições. Continue pelo leitor clássico para acessar o conteúdo disponível.'}
+          {readerError || 'Esta apostila ainda não possui conteúdo publicado.'}
         </p>
         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3">
           {readerError && (
@@ -792,8 +792,8 @@ export default function ApostilaReaderPage() {
               Tentar novamente
             </Button>
           )}
-          <Button variant={readerError ? "outline" : "default"} size="lg" className="hover-lift" onClick={() => navigate(`/apostila/${id}`)}>
-            Ir para o leitor clássico
+          <Button variant={readerError ? "outline" : "default"} size="lg" className="hover-lift" onClick={() => navigate('/dashboard')}>
+            Voltar ao painel
           </Button>
           <Button variant="outline" size="lg" className="hover-lift" onClick={() => navigate(-1)}>
             Voltar

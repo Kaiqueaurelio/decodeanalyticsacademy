@@ -89,7 +89,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
       return;
     }
 
-    navigate(`/apostila/${apostila.id}`);
+    navigate(`/reader/${apostila.id}`);
   };
 
 
