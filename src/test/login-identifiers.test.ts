@@ -5,6 +5,7 @@ import {
   isSpecialIdentifier,
   isValidEmail,
   isValidRa,
+  normalizeIdentifier,
   normalizeRa,
 } from '@/lib/login-identifiers';
 
@@ -18,6 +19,12 @@ describe('login identifiers', () => {
     expect(isEmailIdentifier('Aluno@Example.com')).toBe(true);
     expect(isValidEmail('Aluno@Example.com')).toBe(true);
     expect(isEmailIdentifier('g802144@ra.unip.local')).toBe(false);
+  });
+
+  it('preserves email punctuation while the user is still typing', () => {
+    expect(normalizeIdentifier('vivi.')).toBe('vivi.');
+    expect(normalizeIdentifier('nome.sobrenome+teste')).toBe('nome.sobrenome+teste');
+    expect(normalizeIdentifier('nome_sobrenome')).toBe('nome_sobrenome');
   });
 
   it('accepts the supported RA format and rejects malformed values', () => {
