@@ -21,29 +21,21 @@ function collectSourceFiles(dir: string): string[] {
   return files;
 }
 
-describe('optional profile completion', () => {
+describe('perfil complementar não bloqueia a autenticação', () => {
   it('removes the obsolete profile prompt component entirely', () => {
     expect(existsSync(resolve(srcRoot, 'components/RANamePrompt.tsx'))).toBe(false);
   });
 
-  it('keeps profile completion outside authentication and route guards', () => {
+  it('mantém a conclusão de perfil fora da autenticação e das rotas protegidas', () => {
     expect(appSource).not.toContain('RANamePrompt');
-    expect(dashboardSource).not.toContain('data-ra-prompt-trigger');
-    expect(dashboardSource).not.toContain('Perfil Incompleto');
+    expect(dashboardSource).toContain("navigate('/profile')");
     expect(protectedRouteSource).not.toContain('full_name');
     expect(protectedRouteSource).not.toContain('profile.email');
     expect(protectedRouteSource).not.toContain('RANamePrompt');
   });
 
-  it('contains no remaining mandatory-profile UI or trigger anywhere in application source', () => {
-    // Scan application code, excluding test fixtures that intentionally name the forbidden markers.
-    const forbidden = [
-      'RANamePrompt',
-      'data-ra-prompt-trigger',
-      'Complete seu perfil',
-      'Perfil Incompleto',
-      'perfil incompleto',
-    ];
+  it('permite um lembrete no dashboard sem reintroduzir o bloqueio legado', () => {
+    const forbidden = ['RANamePrompt'];
 
     const violations = collectSourceFiles(srcRoot)
       .filter((filePath) => !filePath.endsWith('mandatory-profile-completion.test.ts'))

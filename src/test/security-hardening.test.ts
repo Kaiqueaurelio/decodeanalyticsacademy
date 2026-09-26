@@ -327,7 +327,7 @@ describe('security hardening regression guards', () => {
   it('keeps gamification mutations behind server-side RPCs', () => {
     const hook = source('src/hooks/useGamification.tsx');
     const migration = source('supabase/migrations/20260920017000_harden_gamification_mutations.sql');
-    expect(hook).toContain("supabase.rpc('record_study_streak'");
+    expect(hook).toContain("(supabase.rpc as any)('record_study_streak'");
     expect(hook).toContain("supabase.rpc('award_badge'");
     expect(hook).not.toContain("from('study_streaks').upsert");
     expect(hook).not.toContain("from('user_badges').insert");
