@@ -1410,7 +1410,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onTogglePublish={togglePublish}
         onPreview={() => {
           if (!id) return;
-          void navigateAfterSave(`/apostila/${id}`);
+          void navigateAfterSave(`/reader/${id}`);
         }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
         onSplitByDate={handleSplitByDate}

@@ -162,7 +162,7 @@ export function useContinueWhereLeft(limit = 3) {
             lessonTitle: info.lessonTitle,
             completedLessons: info.completed,
             totalLessons: info.total,
-            href: `/apostila/${apostilaId}/read?lesson=${encodeURIComponent(info.lessonId)}`,
+            href: `/reader/${apostilaId}?lesson=${encodeURIComponent(info.lessonId)}`,
           });
         }
 
@@ -177,7 +177,7 @@ export function useContinueWhereLeft(limit = 3) {
             category: ap.category,
             lastAt: info.lastAt as string,
             reason: info.reason as 'chat' | 'annotation' | 'pomodoro',
-            href: `/apostila/${aid}`,
+            href: `/reader/${aid}`,
           });
         }
         for (const r of reads.data || []) {

@@ -120,7 +120,7 @@ export default function TiraDuvidaPage() {
                       </div>
                       {item.related_apostila_id && item.related_apostila_title && (
                         <Link
-                          to={`/apostila/${item.related_apostila_id}`}
+                          to={`/reader/${item.related_apostila_id}`}
                           className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-1.5"
                         >
                           <BookOpen className="h-3 w-3" /> {item.related_apostila_title}

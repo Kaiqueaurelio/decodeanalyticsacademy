@@ -418,7 +418,7 @@ export default function VideoPlayerPage() {
                 <p className="font-medium text-sm truncate">{relatedApostila.title}</p>
               </div>
               <div className="flex gap-2 shrink-0">
-                <Button size="sm" onClick={() => navigate(`/apostila/${relatedApostila.id}`)} className="text-xs gap-1.5 h-8">
+                <Button size="sm" onClick={() => navigate(`/reader/${relatedApostila.id}`)} className="text-xs gap-1.5 h-8">
                   <BookOpen className="h-3.5 w-3.5" /> Ler
                 </Button>
               </div>

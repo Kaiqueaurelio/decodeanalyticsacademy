@@ -363,7 +363,7 @@ export default function PerformancePage() {
                       return (
                         <button
                           key={r.apostila_id}
-                          onClick={() => navigate(`/apostila/${r.apostila_id}`)}
+                          onClick={() => navigate(`/reader/${r.apostila_id}`)}
                           className="w-full p-3 rounded-lg border hover:border-primary/30 hover:bg-muted/40 transition-all text-left flex items-center gap-3"
                         >
                           <div className="h-9 w-9 rounded-md flex items-center justify-center text-base flex-shrink-0" style={{ backgroundColor: `${meta.color.replace('hsl(', 'hsla(').replace(')', ', 0.15)')}` }}>

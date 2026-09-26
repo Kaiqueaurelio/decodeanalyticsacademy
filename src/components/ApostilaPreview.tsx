@@ -71,7 +71,7 @@ export function ApostilaPreview({
 
             <div className="space-y-3">
               <Button
-                onClick={() => navigate('/login', { state: { from: '/apostila/' + apostilaId } })}
+                onClick={() => navigate('/login', { state: { from: '/reader/' + apostilaId } })}
                 className="w-full gap-2 h-11"
               >
                 <LogIn size={18} />
@@ -79,7 +79,7 @@ export function ApostilaPreview({
               </Button>
 
               <Button
-                onClick={() => navigate('/login', { state: { from: '/apostila/' + apostilaId, signup: true } })}
+                onClick={() => navigate('/login', { state: { from: '/reader/' + apostilaId, signup: true } })}
                 variant="outline"
                 className="w-full gap-2 h-11"
               >

@@ -37,7 +37,7 @@ export function ApostilaCardActions({
   const done = isCompleted(a.id);
 
   const shareApostila = async () => {
-    const url = `${window.location.origin}/apostila/${a.id}`;
+    const url = `${window.location.origin}/reader/${a.id}`;
     try {
       if (navigator.share) await navigator.share({ title: a.title, url });
       else {
@@ -48,7 +48,7 @@ export function ApostilaCardActions({
   };
 
   const copyLink = async () => {
-    const url = `${window.location.origin}/apostila/${a.id}`;
+    const url = `${window.location.origin}/reader/${a.id}`;
     await navigator.clipboard.writeText(url);
     toast.success("Link copiado");
   };
@@ -60,7 +60,7 @@ export function ApostilaCardActions({
       description: a.category || "Geral",
       icon: BookOpen,
       variant: "primary",
-      onSelect: () => navigate(`/apostila/${a.id}`),
+      onSelect: () => navigate(`/reader/${a.id}`),
     },
     ...(exerciseCount > 0
       ? [{
@@ -76,7 +76,7 @@ export function ApostilaCardActions({
       label: "Pré-visualizar",
       description: "Abrir em nova aba",
       icon: Eye,
-      onSelect: () => window.open(`/apostila/${a.id}`, "_blank", "noopener"),
+      onSelect: () => window.open(`/reader/${a.id}`, "_blank", "noopener"),
     },
     {
       id: "complete",

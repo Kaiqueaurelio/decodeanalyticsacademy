@@ -158,7 +158,7 @@ const SubjectPage = () => {
   }, [decodedCategory]);
 
   const handleOpenApostila = (subject: any) => {
-    navigate(`/apostila/${subject.id}`);
+    navigate(`/reader/${subject.id}`);
   };
 
   if (loading) return <PageSkeleton />;

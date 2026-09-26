@@ -85,7 +85,7 @@ export function CommandPalette() {
                 <CommandItem
                   key={a.id}
                   value={`apostila-${a.id}-${a.title}`}
-                  onSelect={() => go(`/apostila/${a.id}`)}
+                  onSelect={() => go(`/reader/${a.id}`)}
                 >
                   <BookOpen className="mr-2 h-4 w-4 text-primary" />
                   <span className="flex-1 truncate">{a.title}</span>

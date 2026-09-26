@@ -284,7 +284,7 @@ export default function PreExamReviewPage() {
               {related_apostilas.map((a) => (
                 <button
                   key={a.id}
-                  onClick={() => navigate(`/apostila/${a.id}`)}
+                  onClick={() => navigate(`/reader/${a.id}`)}
                   className="w-full flex items-center gap-3 p-3 rounded-lg border border-border/60 hover:border-primary/40 transition-colors group"
                 >
                   <span

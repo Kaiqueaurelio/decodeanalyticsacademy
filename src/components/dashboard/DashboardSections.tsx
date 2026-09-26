@@ -59,7 +59,7 @@ export function ActivitiesToDoSection({ apostilas, exerciseCounts, examFocusSubj
             return (
               <button
                 key={a.id}
-                onClick={() => navigate(`/apostila/${a.id}`)}
+                onClick={() => navigate(`/reader/${a.id}`)}
                 className="w-full flex items-center gap-4 p-3 rounded-xl border border-border/60 bg-muted/20 hover:bg-muted/40 hover:border-primary/40 transition-all text-left group"
               >
                 <div
@@ -161,7 +161,7 @@ export function RecommendedExercisesSection({ apostilas, exerciseCounts }: RecPr
                 <Button
                   size="sm"
                   className="w-full h-8 text-[11px] font-bold"
-                  onClick={() => navigate(`/apostila/${a.id}#exercicios`)}
+                  onClick={() => navigate(`/exercises/${a.id}`)}
                 >
                   Iniciar
                 </Button>

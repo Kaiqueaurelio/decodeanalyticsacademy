@@ -236,7 +236,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
 
             {result.related_apostila && (
               <button
-                onClick={() => { handleClose(false); navigate(`/apostila/${result.related_apostila!.id}`); }}
+                onClick={() => { handleClose(false); navigate(`/reader/${result.related_apostila!.id}`); }}
                 className="w-full text-left rounded-lg border border-border hover:border-primary bg-card p-4 transition-all hover:shadow-md group"
               >
                 <div className="flex items-start gap-3">

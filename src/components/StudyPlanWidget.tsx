@@ -171,7 +171,7 @@ export function StudyPlanWidget() {
                       )}
                     </div>
                     <button
-                      onClick={() => navigate(`/apostila/${item.apostila_id}`)}
+                      onClick={() => navigate(`/reader/${item.apostila_id}`)}
                       className={`text-sm font-medium text-left hover:text-primary transition-colors line-clamp-1 block w-full ${
                         item.completed ? 'line-through' : ''
                       }`}
@@ -183,7 +183,7 @@ export function StudyPlanWidget() {
                     </p>
                   </div>
                   <button
-                    onClick={() => navigate(`/apostila/${item.apostila_id}`)}
+                    onClick={() => navigate(`/reader/${item.apostila_id}`)}
                     className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary transition-opacity"
                     aria-label="Abrir apostila"
                   >

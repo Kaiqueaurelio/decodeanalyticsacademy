@@ -108,7 +108,7 @@ export function StudyNowDialog({ trigger }: Props) {
       description: selected.title,
     });
     setOpen(false);
-    navigate(`/apostila/${selected.id}`);
+    navigate(`/reader/${selected.id}`);
   };
 
   const reviewFlashcards = () => {

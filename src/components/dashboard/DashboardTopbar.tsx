@@ -40,7 +40,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
     // 1. Busca exata em títulos (melhor UX para navegação direta)
     const titleHit = apostilas.find((a: any) => normalize(a.title).includes(lower));
     if (titleHit) {
-      navigate(`/apostila/${titleHit.id}`);
+      navigate(`/reader/${titleHit.id}`);
       return;
     }
 
@@ -61,7 +61,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
         const topResult = data.results[0];
         // Se a similaridade for alta o suficiente, navegamos direto
         if (topResult.similarity > 0.7) {
-          navigate(`/apostila/${topResult.apostila_id}`);
+          navigate(`/reader/${topResult.apostila_id}`);
           return;
         }
       }

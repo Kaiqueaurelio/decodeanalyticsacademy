@@ -38,7 +38,7 @@ export function GlobalSearch() {
 
   const go = (r: Result) => {
     setOpen(false); setQuery('');
-    if (r.type === 'apostila') navigate(`/apostila/${r.id}`);
+    if (r.type === 'apostila') navigate(`/reader/${r.id}`);
     else navigate('/materials');
   };
 
