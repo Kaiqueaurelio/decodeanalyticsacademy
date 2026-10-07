@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_URL, supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -25,7 +25,7 @@ export function McpSyncButton() {
 
       if (settingError) throw settingError;
 
-      const endpoint = setting?.value || `${window.location.origin.replace(/\.lovable\.app$/, '.supabase.co')}/functions/v1/mcp`;
+      const endpoint = setting?.value || `${SUPABASE_URL}/functions/v1/mcp`;
 
       // 2. Chamar o endpoint para sincronização
       // Nota: O MCP responde a JSON-RPC. Aqui simulamos uma chamada de sincronização

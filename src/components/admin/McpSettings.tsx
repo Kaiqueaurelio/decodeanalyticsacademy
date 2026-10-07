@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Link2, RefreshCw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export function McpSettings() {
@@ -30,7 +30,7 @@ export function McpSettings() {
 
       if (error) throw error;
       
-      const defaultUrl = `${window.location.origin.replace(/\.lovable\.app$/, '.supabase.co')}/functions/v1/mcp`;
+      const defaultUrl = `${SUPABASE_URL}/functions/v1/mcp`;
       setUrl(String(data?.value || defaultUrl));
     } catch (err) {
       console.error('Error loading MCP settings:', err);
@@ -72,7 +72,7 @@ export function McpSettings() {
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': session ? `Bearer ${session.access_token}` : '',
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''
+          'apikey': SUPABASE_PUBLISHABLE_KEY
         },
         body: JSON.stringify({
           jsonrpc: "2.0",
