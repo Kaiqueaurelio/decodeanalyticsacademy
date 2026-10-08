@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { AuthProvider } from '@/hooks/useAuth';
@@ -23,7 +23,6 @@ const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
-const ApostilaPage = lazy(() => import('@/pages/ApostilaPage'));
 const ApostilaReaderPage = lazy(() => import('@/pages/ApostilaReaderPage'));
 const ApostilaDoDiaPage = lazy(() => import('@/pages/ApostilaDoDiaPage'));
 const SubjectPage = lazy(() => import('@/pages/SubjectPage'));
@@ -74,6 +73,14 @@ const queryClient = new QueryClient({
   },
 });
 
+/** Mantém links antigos funcionando sem voltar ao leitor legado, que não reúne
+ * as páginas internas e já apresentou travamentos em produção. */
+function LegacyApostilaRedirect() {
+  const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  return <Navigate to={`/reader/${id || ''}${location.search}${location.hash}`} replace />;
+}
+
 function useAdminCopyPatch() {
   const { user } = useAuth();
   React.useEffect(() => {
@@ -116,7 +123,7 @@ const AppContent = () => {
 
                 {/* App Routes (Protected) */}
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                <Route path="/apostila/:id" element={<ProtectedRoute><StudentAppShell><ApostilaPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/apostila/:id" element={<ProtectedRoute><LegacyApostilaRedirect /></ProtectedRoute>} />
                 <Route path="/reader/:id" element={<ProtectedRoute><StudentAppShell><ApostilaReaderPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/aula-do-dia" element={<ProtectedRoute><StudentAppShell><ApostilaDoDiaPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/materia/:id" element={<ProtectedRoute><StudentAppShell><SubjectPage /></StudentAppShell></ProtectedRoute>} />

@@ -858,7 +858,7 @@ export default function ApostilaReaderPage() {
           progressPct={progressPct}
           completedLessons={completedLessons}
           totalLessons={totalLessons}
-          onBack={() => navigate(`/apostila/${id}`)}
+          onBack={() => navigate('/dashboard')}
         />
       </aside>
 
@@ -884,7 +884,7 @@ export default function ApostilaReaderPage() {
               progressPct={progressPct}
               completedLessons={completedLessons}
               totalLessons={totalLessons}
-              onBack={() => navigate(`/apostila/${id}`)}
+              onBack={() => navigate('/dashboard')}
             />
           </div>
         </div>
