@@ -7,28 +7,18 @@ import { BookOpen, PenLine, FileText, Search, Trophy, X } from 'lucide-react';
 const STEPS = [
   {
     icon: <BookOpen className="h-7 w-7 text-primary" />,
-    title: 'Bem-vindo à Decode!',
-    desc: 'Acesse apostilas, exercícios e materiais organizados para seus estudos.',
+    title: 'Encontre seu conteúdo',
+    desc: 'Use a busca e os filtros para chegar rapidamente à matéria, apostila ou tópico que você procura.',
   },
   {
     icon: <PenLine className="h-7 w-7 text-primary" />,
-    title: 'Exercícios Interativos',
-    desc: 'Teste seus conhecimentos por apostila e acompanhe sua evolução.',
-  },
-  {
-    icon: <FileText className="h-7 w-7 text-primary" />,
-    title: 'Materiais de Apoio',
-    desc: 'Encontre PDFs, vídeos, áudios e apresentações por categoria.',
+    title: 'Estude e pratique',
+    desc: 'Leia, faça exercícios e use flashcards. A plataforma registra sua evolução enquanto você estuda.',
   },
   {
     icon: <Trophy className="h-7 w-7 text-primary" />,
-    title: 'Gamificação',
-    desc: 'Ganhe XP, mantenha sua sequência de estudos e desbloqueie conquistas.',
-  },
-  {
-    icon: <Search className="h-7 w-7 text-primary" />,
-    title: 'Ferramentas de Estudo',
-    desc: 'Use flashcards, timer Pomodoro e anotações sem sair do fluxo.',
+    title: 'Acompanhe seu progresso',
+    desc: 'Veja o que já concluiu, mantenha sua sequência e descubra onde vale a pena focar a seguir.',
   },
 ];
 

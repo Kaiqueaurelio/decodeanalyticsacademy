@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +22,9 @@ import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
 import { Reveal } from '@/components/Reveal';
 import { OverallProgressCard } from '@/components/OverallProgressCard';
+import { StudyGoalsConfig } from '@/components/gamification/StudyGoalsConfig';
+
+
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { TermsFooterLink } from '@/components/TermsFooterLink';
@@ -39,6 +43,8 @@ import { NewUpdatePopup } from '@/components/NewUpdatePopup';
 import { McpSyncButton } from '@/components/dashboard/McpSyncButton';
 import { FeaturedJobsWidget } from '@/components/dashboard/FeaturedJobsWidget';
 
+
+
 const EMPTY_FIXED_APOSTILAS: Record<string, string> = {};
 
 export default function DashboardPage() {
@@ -54,18 +60,22 @@ export default function DashboardPage() {
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
     if (saved) return parseInt(saved, 10);
-    return null;
+    return null; 
   });
   const [sortOrder, setSortOrder] = useState<'category' | 'date'>('category');
 
+  // Sincroniza o semestre inicial com o perfil do aluno
   useEffect(() => {
     if (profile?.semester && selectedSemester === null && !localStorage.getItem('selectedSemestre')) {
       setSelectedSemester(profile.semester);
+    } else if (selectedSemester === null && !localStorage.getItem('selectedSemestre')) {
+      // Se não houver preferência salva nem semestre no perfil, não filtramos por padrão para mostrar tudo
+      setSelectedSemester(null); 
     }
-  }, [profile?.semester, selectedSemester]);
+  }, [profile?.semester]);
 
   const { data: apostilasRaw = [], isLoading: loadingApostilas, isError: errorApostilas } = useApostilasList({ semester: selectedSemester });
-
+  
   useEffect(() => {
     if (errorApostilas) {
       console.error("[DashboardPage] Erro ao carregar apostilas");
@@ -79,10 +89,12 @@ export default function DashboardPage() {
       const { data, error } = await supabase.from('fixed_apostilas').select('semester, subject_key, apostila_id');
       if (error) throw error;
       const map: Record<string, string> = {};
-      data.forEach(f => { map[`${f.semester}-${f.subject_key}`] = f.apostila_id; });
+      data.forEach(f => {
+        map[`${f.semester}-${f.subject_key}`] = f.apostila_id;
+      });
       return map;
     },
-    staleTime: 1000 * 60 * 5
+    staleTime: 1000 * 60 * 5 // 5 min
   });
   const fixedApostilas = fixedApostilasData ?? EMPTY_FIXED_APOSTILAS;
   const { data: exerciseCounts = {} } = useExerciseCounts();
@@ -95,19 +107,35 @@ export default function DashboardPage() {
   useEffect(() => {
     setQuery(dashboardSearch);
     if (dashboardSearch) {
-      requestAnimationFrame(() => document.getElementById('minhas-disciplinas')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      requestAnimationFrame(() => {
+        document.getElementById('minhas-disciplinas')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     }
   }, [dashboardSearch]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('decode_sidebar_collapsed') === 'true');
 
-  useEffect(() => { localStorage.setItem('decode_sidebar_collapsed', String(sidebarCollapsed)); }, [sidebarCollapsed]);
+  useEffect(() => {
+    localStorage.setItem('decode_sidebar_collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
+  // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
   const apostilas = useMemo(() => {
+    // 1. Filtragem por semestre se selecionado
+    // Bônus e Canivete Suíço são transversais e devem aparecer em todos os semestres.
     const list = selectedSemester
       ? apostilasRaw.filter(a => {
           const sKey = canonicalSubjectKey(a.category);
           const isFixedForThisSemester = fixedApostilas[`${selectedSemester}-${sKey}`] === a.id;
-          return (a.semester === selectedSemester || a.semester === 0 || a.category === 'Bônus' || a.category === 'Canivete Suíço do Estudante' || a.category?.toLowerCase().includes('bonus') || a.category?.toLowerCase().includes('canivete') || isFixedForThisSemester) && a.published;
+          
+          return (
+            a.semester === selectedSemester || 
+            a.semester === 0 || 
+            a.category === 'Bônus' || 
+            a.category === 'Canivete Suíço do Estudante' || 
+            a.category?.toLowerCase().includes('bonus') ||
+            a.category?.toLowerCase().includes('canivete') ||
+            isFixedForThisSemester
+          ) && a.published;
         })
       : apostilasRaw.filter(a => a.published);
 
@@ -120,79 +148,444 @@ export default function DashboardPage() {
       });
     };
 
-    if (selectedSemester) {
+    // 2. Placeholder para disciplinas da grade (1º ao 8º)
+    const showAcademicPlaceholders = true;
+    if (selectedSemester && showAcademicPlaceholders) {
       const canonicalSubjects = BY_SEMESTER[selectedSemester] || [];
       const teacherMap: Record<string, string> = {
-        'Logica de Programacao': 'Prof. Dr. Ricardo Silva', 'Matematica Discreta': 'Profa. Ana Paula', 'Introducao a Computacao': 'Prof. Anderson Lima', 'Comunicacao e Expressao': 'Profa. Mariana Costa', 'Fundamentos de Sistemas de Informacao': 'Prof. Jorge Amaral', 'Orientada a Objeto (POO)': 'Prof. Luiz Henrique', 'Calculo Diferencial e Integral I': 'Prof. Valter Braga', 'Algebra Linear': 'Prof. Fabio Souza', 'Arquitetura e Organizacao de Computadores': 'Prof. Roberto Santos', 'Estrutura de Dados': 'Prof. Anderson Lima', 'Banco de Dados': 'Prof. Carlos Oliveira', 'Engenharia de Software': 'Profa. Ana Paula', 'Programacao Web': 'Prof. Sergio Murilo', 'Analise e Projeto de Sistemas': 'Prof. Andre Luiz', 'Sistemas Operacionais e Mobile': 'Prof. Anderson Lima', 'Calculo Numerico Computacional': 'Prof. Jorge Amaral', 'Pesquisa Operacional': 'Prof. Dr. Ricardo Silva', 'Aspectos Teoricos da Computacao': 'Profa. Ana Paula', 'Processamento de Imagem e Visao Computacional': 'Prof. Luiz Henrique', 'Ciencia de Dados': 'Profa. Mariana Costa', 'Metodos de Pesquisa': 'Profa. Clarisse Lispector', 'Interdisciplinar de Ciencia da Computacao': 'Coordenacao CC', 'Engenharia de Software II': 'Profa. Ana Paula', 'Mineracao de Dados': 'Profa. Mariana Costa', 'Analise de Algoritmos': 'Prof. Luiz Henrique', 'Seguranca da Informacao': 'Prof. Carlos Oliveira', 'Computacao em Nuvem': 'Prof. Roberto Santos', 'Aprendizado de Maquina (Machine Learning)': 'Prof. Fabiano Gomes', 'Topicos Especiais de Computacao': 'Prof. Sergio Murilo', 'Sistemas Digitais': 'Prof. Fabio Souza', 'Trabalho de Conclusao de Curso (TCC)': 'Coordenacao CC', 'Empreendedorismo': 'Prof. Marcos Viana', 'Gestao de Projetos': 'Prof. Andre Luiz', 'Etica Profissional': 'Profa. Clarisse Lispector', 'Computacao de Alto Desempenho': 'Prof. Valter Braga',
+        'Logica de Programacao': 'Prof. Dr. Ricardo Silva',
+        'Matematica Discreta': 'Profa. Ana Paula',
+        'Introducao a Computacao': 'Prof. Anderson Lima',
+        'Comunicacao e Expressao': 'Profa. Mariana Costa',
+        'Fundamentos de Sistemas de Informacao': 'Prof. Jorge Amaral',
+        'Orientada a Objeto (POO)': 'Prof. Luiz Henrique',
+        'Calculo Diferencial e Integral I': 'Prof. Valter Braga',
+        'Algebra Linear': 'Prof. Fabio Souza',
+        'Arquitetura e Organizacao de Computadores': 'Prof. Roberto Santos',
+        'Estrutura de Dados': 'Prof. Anderson Lima',
+        'Banco de Dados': 'Prof. Carlos Oliveira',
+        'Engenharia de Software': 'Profa. Ana Paula',
+        'Programacao Web': 'Prof. Sergio Murilo',
+        'Analise e Projeto de Sistemas': 'Prof. Andre Luiz',
+        'Sistemas Operacionais e Mobile': 'Prof. Anderson Lima',
+        'Calculo Numerico Computacional': 'Prof. Jorge Amaral',
+        'Pesquisa Operacional': 'Prof. Dr. Ricardo Silva',
+        'Aspectos Teoricos da Computacao': 'Profa. Ana Paula',
+        'Processamento de Imagem e Visao Computacional': 'Prof. Luiz Henrique',
+        'Ciencia de Dados': 'Profa. Mariana Costa',
+        'Metodos de Pesquisa': 'Profa. Clarisse Lispector',
+        'Interdisciplinar de Ciencia da Computacao': 'Coordenacao CC',
+        'Engenharia de Software II': 'Profa. Ana Paula',
+        'Mineracao de Dados': 'Profa. Mariana Costa',
+        'Analise de Algoritmos': 'Prof. Luiz Henrique',
+        'Seguranca da Informacao': 'Prof. Carlos Oliveira',
+        'Computacao em Nuvem': 'Prof. Roberto Santos',
+        'Aprendizado de Maquina (Machine Learning)': 'Prof. Fabiano Gomes',
+        'Topicos Especiais de Computacao': 'Prof. Sergio Murilo',
+        'Sistemas Digitais': 'Prof. Fabio Souza',
+        'Trabalho de Conclusao de Curso (TCC)': 'Coordenacao CC',
+        'Empreendedorismo': 'Prof. Marcos Viana',
+        'Gestao de Projetos': 'Prof. Andre Luiz',
+        'Etica Profissional': 'Profa. Clarisse Lispector',
+        'Computacao de Alto Desempenho': 'Prof. Valter Braga',
       };
+
+      // Criar lista de disciplinas (materias) que já existem no banco para este semestre
       const existingCategoriesKeys = new Set(list.map(a => canonicalSubjectKey(a.category)));
-      const placeholders: ApostilaSummary[] = canonicalSubjects.filter(subject => !existingCategoriesKeys.has(canonicalSubjectKey(subject))).map((subject, idx) => ({
-        id: `placeholder-${selectedSemester}-${idx}`, title: `Caderno de ${subject}`, category: subject, semester: selectedSemester, isPlaceholder: true, published: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString(), cover_url: null, file_url: null, source_type: null, course: null, teacher: teacherMap[subject] || 'Professor da Disciplina', saved_date: null,
-      }));
+
+      // Gerar placeholders apenas para as disciplinas da grade que NÃO possuem nenhum conteúdo vinculado
+      const placeholders: ApostilaSummary[] = canonicalSubjects
+        .filter(subject => !existingCategoriesKeys.has(canonicalSubjectKey(subject)))
+        .map((subject, idx) => ({
+          id: `placeholder-${selectedSemester}-${idx}`,
+          title: `Caderno de ${subject}`,
+          category: subject,
+          semester: selectedSemester,
+          isPlaceholder: true,
+          published: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          cover_url: null,
+          file_url: null,
+          source_type: null,
+          course: null,
+          teacher: teacherMap[subject] || 'Professor da Disciplina',
+          saved_date: null,
+        }));
+
       return sortByPreference([...list, ...placeholders]);
     }
+
     return sortByPreference(list);
   }, [apostilasRaw, selectedSemester, fixedApostilas, sortOrder]);
+  
+  
 
   useEffect(() => {
-    if (selectedSemester !== null) localStorage.setItem('selectedSemestre', selectedSemester.toString());
-    else localStorage.removeItem('selectedSemestre');
+    if (selectedSemester !== null) {
+      localStorage.setItem('selectedSemestre', selectedSemester.toString());
+    } else {
+      localStorage.removeItem('selectedSemestre');
+    }
   }, [selectedSemester]);
 
-  // A entrada no dashboard não deve alterar progresso acadêmico nem XP do usuário.
-  // Progresso deve ser gerado apenas pelas ações reais de estudo/conclusão.
   useEffect(() => {
     if (!user) return;
-    const syncSession = async () => {
-      try {
-        await gamification.updateStreak();
-        await gamification.checkAndAwardBadge('first_login');
-      } catch (e) {
-        console.error("Erro ao sincronizar sessão de gamificação:", e);
-      }
-    };
-    syncSession();
+    
+    // O progresso acadêmico é calculado a partir das atividades reais do aluno.
+    // Não marque semestres automaticamente: isso distorce os indicadores de estudo.
+
+
     const seen = localStorage.getItem('decode_onboarding_done');
     if (!seen) setShowOnboarding(true);
+    gamification.updateStreak();
+    gamification.checkAndAwardBadge('first_login');
 
-    if (profile && (!profile.full_name || profile.full_name.length < 3 || (profile.account_type === 'ra' && (!profile.email || profile.email.endsWith('@ra.unip.local'))))) {
-      toast.info("Perfil Incompleto", { description: "Por favor, preencha seu nome e e-mail no perfil para habilitar todas as funções da comunidade.", duration: 8000, action: { label: "Completar", onClick: () => { const btn = document.querySelector('[data-ra-prompt-trigger]') as HTMLButtonElement; if (btn) btn.click(); else navigate('/profile'); } } });
-    }
-  }, [user, profile?.full_name, profile?.account_type, profile?.email, navigate, gamification]);
+  }, [user, isAdmin, profile?.full_name]);
 
-  const handleOnboardingComplete = () => { localStorage.setItem('decode_onboarding_done', 'true'); setShowOnboarding(false); };
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('decode_onboarding_done', 'true');
+    setShowOnboarding(false);
+  };
+
+  const handlePomodoroComplete = async () => {
+    if (!user) return;
+    await supabase.from('pomodoro_sessions').insert({ user_id: user.id, duration: 25, completed: true });
+    gamification.addXP(15);
+  };
 
   const totalExercises = Object.values(exerciseCounts).reduce((sum, count) => sum + count, 0);
   const answeredExercises = stats.hits + stats.errors;
   const overallProgress = totalExercises > 0 ? Math.min(100, Math.round((answeredExercises / totalExercises) * 100)) : 0;
-  const heatmapData = stats.byApostila ? Object.entries(stats.byApostila).map(([_, summary]) => { const itemStats = summary as { hits?: number; errors?: number }; return { date: new Date().toISOString().split('T')[0], count: (itemStats.hits || 0) + (itemStats.errors || 0) }; }) : [];
+  const heatmapData = stats.byApostila ? Object.entries(stats.byApostila).map(([_, summary]) => {
+    const itemStats = summary as { hits?: number; errors?: number };
+    return {
+      date: new Date().toISOString().split('T')[0], // Fallback para data atual se não houver timestamp no stats
+      count: (itemStats.hits || 0) + (itemStats.errors || 0),
+    };
+  }) : [];
+  
   const disciplinesTotal = new Set(apostilas.map((a) => a.category || 'Geral')).size;
+  const apostilasIniciadas = Object.values(readingProgress).filter((item) => item.status !== 'nao-iniciada').length;
   const apostilasConcluidas = Object.values(readingProgress).filter((item) => item.status === 'concluida').length;
   const overallAccuracy = answeredExercises > 0 ? Math.round((stats.hits / answeredExercises) * 100) : 0;
+
   const groupedApostilas = useMemo(() => groupByCanonical(apostilas), [apostilas]);
-  const groupProgress = useMemo(() => { const progress = {} as Record<CanonicalGroup, number>; CANONICAL_GROUPS.forEach((group) => { const groupItems = groupedApostilas[group]; const answered = groupItems.reduce((sum, apostila) => { const itemStats = stats.byApostila[apostila.id]; return sum + (itemStats?.hits || 0) + (itemStats?.errors || 0); }, 0); const total = groupItems.reduce((sum, apostila) => sum + (exerciseCounts[apostila.id] || 0), 0); progress[group] = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0; }); return progress; }, [exerciseCounts, groupedApostilas, stats.byApostila]);
-  const groupCounts = useMemo(() => { const counts = {} as Record<CanonicalGroup, number>; CANONICAL_GROUPS.forEach((group) => { counts[group] = groupedApostilas[group].length; }); return counts; }, [groupedApostilas]);
+  const groupProgress = useMemo(() => {
+    const progress = {} as Record<CanonicalGroup, number>;
+
+    CANONICAL_GROUPS.forEach((group) => {
+      const groupItems = groupedApostilas[group];
+      const answered = groupItems.reduce((sum, apostila) => {
+        const itemStats = stats.byApostila[apostila.id];
+        return sum + (itemStats?.hits || 0) + (itemStats?.errors || 0);
+      }, 0);
+      const total = groupItems.reduce((sum, apostila) => sum + (exerciseCounts[apostila.id] || 0), 0);
+      progress[group] = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0;
+    });
+
+    return progress;
+  }, [exerciseCounts, groupedApostilas, stats.byApostila]);
+
+  const groupCounts = useMemo(() => {
+    const counts = {} as Record<CanonicalGroup, number>;
+    CANONICAL_GROUPS.forEach((group) => {
+      counts[group] = groupedApostilas[group].length;
+    });
+    return counts;
+  }, [groupedApostilas]);
 
   return (
     <div className="min-h-screen bg-background relative selection:bg-primary/20 overflow-x-hidden">
-      <Watermark /><NewUpdatePopup />{showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
-      <StudentSidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((current) => !current)} />
+      <Watermark />
+      <NewUpdatePopup />
+      {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
+
+      <StudentSidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed((current) => !current)}
+      />
+
       <div className={`flex min-h-screen flex-col transition-[padding] duration-300 ease-out ${sidebarCollapsed ? 'lg:pl-[84px]' : 'lg:pl-[264px]'}`}>
-        <DashboardTopbar hideSearchOnMobile={true} />
-        <motion.main initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }} animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }} transition={prefersReducedMotion ? undefined : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="mx-auto w-full max-w-[1440px] flex-1 animate-content-show space-y-6 px-4 py-6 pb-20 sm:px-6 lg:px-8 lg:py-8">
-          {isAdmin && <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 border border-accent/20"><ShieldCheck className="h-3 w-3 text-accent" /><span className="text-[9px] font-black uppercase tracking-wider text-accent">Modo Administrador Ativo</span><div className="h-1 w-1 rounded-full bg-accent animate-pulse ml-1" /></div>}
-          <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto]"><ContinueWhereLeftCard /><div className="flex justify-end"><McpSyncButton /></div></div>
-          <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border/10 overflow-x-auto scrollbar-none"><div className="flex items-center gap-2 whitespace-nowrap"><div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><BookOpen className="h-4 w-4" /></div><div className="flex flex-col"><span className="text-[10px] uppercase font-bold text-muted-foreground/60 leading-none">Disciplinas</span><span className="text-xs font-bold">{disciplinesTotal} Ativas</span></div></div><div className="h-4 w-px bg-border/40" /><div className="flex items-center gap-3"><Button variant="ghost" size="sm" onClick={() => setSortOrder(sortOrder === 'category' ? 'date' : 'category')} className="h-8 px-2 text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-primary/10 hover:text-primary"><div className="flex items-center gap-1"><span className="text-muted-foreground/60">Ordem:</span><span>{sortOrder === 'category' ? 'Matéria' : 'Data'}</span></div>{sortOrder === 'category' ? <BookOpen className="h-3 w-3" /> : <Clock className="h-3 w-3" />}</Button><Button variant="outline" size="sm" onClick={() => navigate(`/aula-do-dia${selectedSemester ? `?semester=${selectedSemester}` : ''}`)} className="h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2 bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"><Sparkles className="h-3 w-3" />Aula do Dia</Button></div><div className="ml-auto flex items-center gap-3"><div className="hidden sm:flex flex-col items-end"><span className="text-[10px] font-bold text-primary uppercase leading-none">Progresso Geral</span><span className="text-xs font-black">{overallProgress}%</span></div><div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden hidden sm:block"><div className="h-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.5)] transition-all duration-1000" style={{ width: `${overallProgress}%` }} /></div></div></div>
-          <Reveal from="bottom" delay={10}><HeroGreetingCard name={profile?.full_name || ''} overallProgress={overallProgress} totalApostilas={Array.isArray(apostilas) ? apostilas.length : 0} totalAnswered={answeredExercises} /></Reveal>
-          <Reveal from="bottom" delay={15}><OverallProgressCard overallProgress={overallProgress} overallAccuracy={overallAccuracy} groupProgress={groupProgress} groupCounts={groupCounts} totalApostilas={Array.isArray(apostilas) ? apostilas.length : 0} /></Reveal>
-          <Reveal from="bottom" delay={20}><div className="space-y-5"><AdBanner position="inline" /></div></Reveal>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center"><div className="min-w-0 flex-1"><AdBanner position="inline" /></div><div className="flex shrink-0 items-center justify-center sm:justify-end"><BuyMeCoffeeButton variant="minimal" size="small" text="Apoiar o projeto" className="w-full sm:w-auto" /></div></div>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5"><div className="lg:col-span-8 space-y-5"><Reveal from="bottom" delay={25}><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><StudyHeatmap data={heatmapData} /></div></Reveal><div id="atividades"><Reveal from="bottom" delay={30}><ActivitiesToDoSection apostilas={Array.isArray(apostilas) ? apostilas : []} exerciseCounts={exerciseCounts || {}} examFocusSubject={examFocus?.subject || null} /></Reveal></div><Reveal from="bottom" delay={35}><RecommendedExercisesSection apostilas={Array.isArray(apostilas) ? apostilas : []} exerciseCounts={exerciseCounts || {}} /></Reveal></div><div className="lg:col-span-4 space-y-5"><Reveal from="bottom" delay={25}><div className="space-y-5"><HallOfFame /><div className="rounded-2xl border border-border bg-card p-5"><header className="flex items-center justify-between mb-3"><h3 className="font-bold text-base">Agenda · Próximos prazos</h3></header><ExamCalendarWidget /></div><FeaturedJobsWidget /></div></Reveal><Reveal from="bottom" delay={45}><div className="rounded-2xl border border-border bg-gradient-to-br from-card to-accent/5 p-5"><header className="flex items-center gap-2 mb-4"><div className="h-8 w-8 rounded-lg bg-accent/20 text-accent flex items-center justify-center"><Search className="h-4 w-4" /></div><div><h3 className="font-bold text-sm">Busca Rápida</h3><p className="text-[10px] text-muted-foreground">Pule direto para uma aula</p></div></header><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" /><Input placeholder="Pressione '/' para buscar..." className="h-9 pl-9 text-xs bg-background/40" onFocus={(e) => { e.target.blur(); const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement; if (searchInput) { searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); searchInput.focus(); } }} /></div></div></Reveal></div></div>
-          <Reveal from="bottom" delay={50}><ProgressSummaryRow disciplinas={{ ativas: new Set(apostilas.map((a) => a.category || 'Geral')).size, total: disciplinesTotal }} atividades={{ concluidas: apostilasConcluidas, total: apostilas.length }} exercicios={{ resolvidos: answeredExercises, total: totalExercises }} apostilas={{ lidas: apostilasConcluidas, total: apostilas.length }} /></Reveal>
-          <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-4 sm:p-6 transition-all duration-500"><header className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between"><div className="flex flex-col gap-1"><div className="flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /><h2 className="font-bold text-base">Minhas Disciplinas</h2></div><p className="text-[10px] text-muted-foreground pl-6">{selectedSemester ? `Visualizando ${selectedSemester}º semestre` : 'Visualizando toda a grade curricular'}</p></div><div className="flex flex-col gap-3 sm:flex-row sm:items-center"><SemesterFilter selectedSemester={selectedSemester} onSelect={(sem) => { setSelectedSemester(sem); if (sem) toast.success(`Semestre ${sem}º selecionado e salvo.`, { description: "Suas preferências foram sincronizadas.", duration: 2000 }); else toast.info("Visualizando toda a grade curricular.", { duration: 2000 }); }} /><div className="relative w-full md:max-w-xs"><Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" /><Input type="search" value={query} onChange={(e) => setQuery(e.target.value.slice(0, 80))} placeholder="Buscar disciplina..." aria-label="Buscar disciplina ou apostila" className="h-8 pl-8 pr-8 text-xs bg-background/50 border-primary/10" />{query && <button type="button" onClick={() => setQuery('')} aria-label="Limpar busca" className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>}</div></div></header>{loading ? <DashboardSkeleton /> : apostilas.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma apostila disponível.</p> : <div className="space-y-6"><SubjectFolderGrid apostilas={apostilas} exerciseCounts={exerciseCounts} stats={stats} query={query} /></div>}</section>
-          <footer className="flex flex-col items-center justify-center gap-3 py-10 mt-6 border-t border-border/10 text-center text-[10px] text-muted-foreground/60 bg-gradient-to-b from-transparent to-primary/5 rounded-b-3xl"><TermsFooterLink variant="inline" /><div className="flex flex-col gap-1 items-center"><span className="font-medium tracking-wide">Desenvolvido por: Kaique Aurelio &amp; Decode Analytics</span></div></footer>
+        <DashboardTopbar hideSearchOnMobile={false} />
+
+        <motion.main
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? undefined : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto w-full max-w-[1440px] flex-1 animate-content-show space-y-6 px-4 py-6 pb-20 sm:px-6 lg:px-8 lg:py-8"
+        >
+          {isAdmin && (
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 border border-accent/20">
+              <ShieldCheck className="h-3 w-3 text-accent" />
+              <span className="text-[9px] font-black uppercase tracking-wider text-accent">Modo Administrador Ativo</span>
+              <div className="h-1 w-1 rounded-full bg-accent animate-pulse ml-1" />
+            </div>
+          )}
+
+          <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <ContinueWhereLeftCard />
+            <div className="flex justify-end">
+              <McpSyncButton />
+            </div>
+          </div>
+
+          {/* Dashboard Summary Bar */}
+          <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border/10 overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <BookOpen className="h-4 w-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground/60 leading-none">Disciplinas</span>
+                <span className="text-xs font-bold">{disciplinesTotal} Ativas</span>
+              </div>
+            </div>
+
+            <div className="h-4 w-px bg-border/40" />
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === 'category' ? 'date' : 'category')}
+                className="h-8 px-2 text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-primary/10 hover:text-primary"
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground/60">Ordem:</span>
+                  <span>{sortOrder === 'category' ? 'Matéria' : 'Data'}</span>
+                </div>
+                {sortOrder === 'category' ? <BookOpen className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/aula-do-dia${selectedSemester ? `?semester=${selectedSemester}` : ''}`)}
+                className="h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2 bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
+              >
+                <Sparkles className="h-3 w-3" />
+                Aula do Dia
+              </Button>
+            </div>
+
+            <div className="ml-auto flex items-center gap-3">
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-[10px] font-bold text-primary uppercase leading-none">Progresso Geral</span>
+                <span className="text-xs font-black">{overallProgress}%</span>
+              </div>
+              <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden hidden sm:block">
+                <div 
+                  className="h-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.5)] transition-all duration-1000" 
+                  style={{ width: `${overallProgress}%` }} 
+                />
+              </div>
+            </div>
+          </div>
+
+          <Reveal from="bottom" delay={10}>
+            <HeroGreetingCard
+              name={profile?.full_name || ''}
+              overallProgress={overallProgress}
+              totalApostilas={Array.isArray(apostilas) ? apostilas.length : 0}
+              totalAnswered={answeredExercises}
+            />
+          </Reveal>
+
+          <Reveal from="bottom" delay={15}>
+            <OverallProgressCard
+              overallProgress={overallProgress}
+              overallAccuracy={overallAccuracy}
+              groupProgress={groupProgress}
+              groupCounts={groupCounts}
+              totalApostilas={Array.isArray(apostilas) ? apostilas.length : 0}
+            />
+          </Reveal>
+
+          <Reveal from="bottom" delay={20}>
+            <div className="space-y-5">
+              <AdBanner position="inline" />
+            </div>
+          </Reveal>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="min-w-0 flex-1">
+              <AdBanner position="inline" />
+            </div>
+            <div className="flex shrink-0 items-center justify-center sm:justify-end">
+              <BuyMeCoffeeButton
+                variant="minimal"
+                size="small"
+                text="Apoiar o projeto"
+                className="w-full sm:w-auto"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div className="lg:col-span-8 space-y-5">
+              <Reveal from="bottom" delay={25}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <StudyHeatmap data={heatmapData} />
+                </div>
+              </Reveal>
+
+              <div id="atividades">
+                <Reveal from="bottom" delay={30}>
+                  <ActivitiesToDoSection
+                    apostilas={Array.isArray(apostilas) ? apostilas : []}
+                    exerciseCounts={exerciseCounts || {}}
+                    examFocusSubject={examFocus?.subject || null}
+                  />
+                </Reveal>
+              </div>
+
+              <Reveal from="bottom" delay={35}>
+                <RecommendedExercisesSection 
+                  apostilas={Array.isArray(apostilas) ? apostilas : []} 
+                  exerciseCounts={exerciseCounts || {}} 
+                />
+              </Reveal>
+            </div>
+
+            <div className="lg:col-span-4 space-y-5">
+              <Reveal from="bottom" delay={25}>
+                <div className="space-y-5">
+                  <HallOfFame />
+                  <div className="rounded-2xl border border-border bg-card p-5">
+                    <header className="flex items-center justify-between mb-3">
+                      <h3 className="font-bold text-base">Agenda · Próximos prazos</h3>
+                    </header>
+                    <ExamCalendarWidget />
+                  </div>
+                  <FeaturedJobsWidget />
+                </div>
+              </Reveal>
+              
+              <Reveal from="bottom" delay={45}>
+                <div className="rounded-2xl border border-border bg-gradient-to-br from-card to-accent/5 p-5">
+                  <header className="flex items-center gap-2 mb-4">
+                    <div className="h-8 w-8 rounded-lg bg-accent/20 text-accent flex items-center justify-center">
+                      <Search className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm">Busca Rápida</h3>
+                      <p className="text-[10px] text-muted-foreground">Pule direto para uma aula</p>
+                    </div>
+                  </header>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input 
+                      placeholder="Pressione '/' para buscar..."
+                      className="h-9 pl-9 text-xs bg-background/40"
+                      onFocus={(e) => {
+                        e.target.blur();
+                        const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+                        if (searchInput) {
+                          searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          searchInput.focus();
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </Reveal>
+            </div>
+          </div>
+
+          <Reveal from="bottom" delay={50}>
+            <ProgressSummaryRow
+              disciplinas={{ ativas: new Set(apostilas.map((a) => a.category || 'Geral')).size, total: disciplinesTotal }}
+              atividades={{ concluidas: apostilasConcluidas, total: apostilas.length }}
+              exercicios={{ resolvidos: answeredExercises, total: totalExercises }}
+              apostilas={{ lidas: apostilasConcluidas, total: apostilas.length }}
+            />
+          </Reveal>
+
+          <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-4 sm:p-6 transition-all duration-500">
+            <header className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <h2 className="font-bold text-base">Minhas Disciplinas</h2>
+                </div>
+                <p className="text-[10px] text-muted-foreground pl-6">
+                  {selectedSemester ? `Visualizando ${selectedSemester}º semestre` : 'Visualizando toda a grade curricular'}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <SemesterFilter 
+                  selectedSemester={selectedSemester} 
+                  onSelect={(sem) => {
+                    setSelectedSemester(sem);
+                    if (sem) {
+                      toast.success(`Semestre ${sem}º selecionado e salvo.`, {
+                        description: "Suas preferências foram sincronizadas.",
+                        duration: 2000,
+                      });
+                    } else {
+                      toast.info("Visualizando toda a grade curricular.", {
+                        duration: 2000,
+                      });
+                    }
+                  }} 
+                />
+
+                <div className="relative w-full md:max-w-xs">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                  <Input
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value.slice(0, 80))}
+                    placeholder="Buscar disciplina..."
+                    aria-label="Buscar disciplina ou apostila"
+                    className="h-8 pl-8 pr-8 text-xs bg-background/50 border-primary/10"
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery('')}
+                      aria-label="Limpar busca"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </header>
+
+            {loading ? (
+              <DashboardSkeleton />
+            ) : apostilas.length === 0 ? (
+
+              <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma apostila disponível.</p>
+            ) : (
+              <div className="space-y-6">
+                <SubjectFolderGrid
+                  apostilas={apostilas}
+                  exerciseCounts={exerciseCounts}
+                  stats={stats}
+                  query={query}
+                />
+              </div>
+            )}
+          </section>
+
+
+
+
+
+          <footer className="flex flex-col items-center justify-center gap-3 py-10 mt-6 border-t border-border/10 text-center text-[10px] text-muted-foreground/60 bg-gradient-to-b from-transparent to-primary/5 rounded-b-3xl">
+            <TermsFooterLink variant="inline" />
+            <div className="flex flex-col gap-1 items-center">
+              <span className="font-medium tracking-wide">Desenvolvido por: Kaique Aurelio &amp; Decode Analytics</span>
+            </div>
+          </footer>
         </motion.main>
       </div>
+
       <AdSidebar />
     </div>
   );

@@ -1,4 +1,8 @@
-import { GraduationCap, MessageCircle, Mail, Quote, FlaskConical, Users, Cpu, Code2 } from 'lucide-react';
+import { useState } from 'react';
+import {
+  GraduationCap, MessageCircle, Mail, FlaskConical, Users, Cpu, Code2,
+  ChevronDown,
+} from 'lucide-react';
 import kaiqueAvatar from '@/assets/kaique-creator.jpeg';
 
 const WHATSAPP_NUMBER = '5511939222885';
@@ -6,89 +10,128 @@ const WHATSAPP_MSG = encodeURIComponent('Olá Kaique! Vim pela Decode Analytics 
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
 const EMAIL_URL = 'mailto:decodeanalytics@outlook.com.br?subject=Contato%20Decode%20Analytics%20Academy';
 
+const highlights = [
+  { icon: GraduationCap, title: 'Formação & atuação', text: 'Graduando em Ciência da Computação, com foco em tecnologia aplicada à educação e IA.' },
+  { icon: FlaskConical, title: 'Projetos de impacto', text: 'Pesquisa em Realidade Aumentada na educação e desenvolvimento de ferramentas com foco em inclusão e sustentabilidade.' },
+  { icon: Code2, title: 'Propósito', text: 'Criar soluções educacionais diretas, funcionais e úteis para quem está aprendendo tecnologia.' },
+];
+
+const tags = [
+  'Estudante de Ciência da Computação',
+  'Fundador da Decode Analytics',
+  'Desenvolvedor & pesquisador',
+];
+
+const details = [
+  {
+    icon: Users,
+    title: 'Experiência e liderança',
+    text: 'Experiência prática em tecnologia desde 2018 e liderança de equipes em projetos acadêmicos e digitais.',
+  },
+  {
+    icon: Cpu,
+    title: 'Tecnologia na prática',
+    text: 'Projetos com Arduino, dashboards, assistentes virtuais, plataformas gamificadas e aplicações web.',
+  },
+];
+
 export function CreatorSection() {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   return (
     <section id="criador" className="relative overflow-hidden px-4 py-16 sm:py-24">
       <div className="grid-lines-bg pointer-events-none absolute inset-0 opacity-10" />
 
-      <div className="container relative mx-auto max-w-4xl">
+      <div className="container relative mx-auto max-w-5xl">
         <div className="mb-8 text-center sm:mb-12">
           <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-primary sm:text-xs">
             // quem mantém a plataforma
           </p>
-          <h2 className="font-display text-3xl leading-tight sm:text-4xl">
+          <h2 className="font-display text-3xl leading-tight sm:text-4xl md:text-5xl">
             Feito por <span className="text-primary">aluno</span>, para alunos
           </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+            Conheça quem está por trás da Decode Analytics Academy e por que a plataforma foi criada.
+          </p>
         </div>
 
-        <div className="rounded-2xl border border-border/60 bg-card/40 p-6 backdrop-blur-sm sm:p-8">
-          <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:items-start sm:text-left">
-            <div className="shrink-0 rounded-full bg-gradient-to-br from-primary to-accent p-[2px]">
-              <img
-                src={kaiqueAvatar}
-                alt="Kaique Aurélio, criador da Decode Analytics Academy"
-                className="h-24 w-24 rounded-full bg-background object-cover sm:h-28 sm:w-28"
-              />
+        <div className="rounded-2xl border border-border/60 bg-card/40 p-5 backdrop-blur-sm sm:p-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+            <div className="flex shrink-0 justify-center sm:justify-start">
+              <div className="rounded-full bg-gradient-to-br from-primary to-accent p-[2px] shadow-lg shadow-primary/10">
+                <img
+                  src={kaiqueAvatar}
+                  alt="Kaique Aurélio, criador da Decode Analytics Academy"
+                  className="h-24 w-24 rounded-full bg-background object-cover sm:h-28 sm:w-28"
+                />
+              </div>
             </div>
 
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 text-center sm:text-left">
               <h3 className="font-display text-2xl leading-tight sm:text-3xl">Kaique Aurélio</h3>
               <p className="mt-1 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground sm:text-xs">
                 <GraduationCap className="h-3.5 w-3.5" strokeWidth={1.75} />
-                Ciência da Computação · fundou a Decode Analytics em 2018
+                Ciência da Computação · fundador da Decode Analytics
               </p>
 
-              <div className="relative mt-5 rounded-xl border border-border/50 bg-background/40 p-4 sm:p-5">
-                <Quote className="absolute -left-2 -top-2 h-5 w-5 text-primary/60" strokeWidth={2.5} />
-                <p className="text-left text-sm leading-relaxed text-foreground/90 sm:text-base">
-                  Cansei de perder tempo procurando apostila boa e exercício resolvido espalhado em PDF.
-                  Construí <span className="font-semibold text-primary">a plataforma que eu queria ter</span> —
-                  e abri pra turma usar comigo.
-                </p>
-              </div>
-
-              <div className="mt-5 space-y-3 text-left text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
-                <p>
-                  Estudante do 5º semestre de Ciência da Computação, com trajetória que combina
-                  formação acadêmica e experiência prática em tecnologia. Desde 2018 é fundador da
-                  Decode Analytics, e já atuou em empresas como Correios e Mercado Livre.
-                </p>
-
-                <p>
-                  Na área acadêmica, desenvolveu projeto de Iniciação Científica em Realidade
-                  Aumentada aplicada à educação de crianças com TDAH, utilizando Merge Cube. Também
-                  liderou uma equipe multidisciplinar de 6 pessoas na criação de 4 jogos digitais
-                  educativos focados em sustentabilidade.
-                </p>
-
-                <p>
-                  Tem experiência prática em robótica educacional com Arduino e em projetos que vão
-                  de dashboards interativos a assistentes virtuais e plataformas multiplayer
-                  gamificadas. Com liderança de equipes de até 8 pessoas, busca unir habilidade
-                  técnica e visão crítica em soluções de impacto social e educacional.
-                </p>
-              </div>
-
-              <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-                {[
-                  { icon: FlaskConical, title: 'Iniciação Científica', text: 'Realidade Aumentada aplicada à educação de crianças com TDAH' },
-                  { icon: Users, title: 'Liderança', text: 'Equipes de até 8 pessoas em projetos acadêmicos' },
-                  { icon: Cpu, title: 'Robótica educacional', text: 'Projetos com Arduino e sistemas embarcados' },
-                  { icon: Code2, title: 'Stack', text: 'Python, JavaScript, TypeScript, C++, Java e React' },
-                ].map((item) => (
-                  <li
-                    key={item.title}
-                    className="flex gap-3 rounded-xl border border-border/50 bg-background/40 p-3 text-left"
+              <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-medium text-foreground/90 sm:text-xs"
                   >
-                    <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold leading-tight">{item.title}</p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.text}</p>
-                    </div>
-                  </li>
+                    {tag}
+                  </span>
                 ))}
-              </ul>
+              </div>
 
+              <p className="mx-auto mt-5 max-w-3xl text-sm leading-7 text-muted-foreground sm:mx-0 sm:text-[15px]">
+                Desenvolvi a plataforma para resolver dores reais que encontrei como estudante:
+                encontrar conteúdo confiável, praticar sem perder tempo e acompanhar a evolução em um
+                único lugar.
+              </p>
+
+              <div className="mt-6 grid gap-3 md:grid-cols-3">
+                {highlights.map(({ icon: Icon, title, text }) => (
+                  <article
+                    key={title}
+                    className="rounded-xl border border-border/50 bg-background/40 p-4 text-left transition-colors hover:border-primary/30"
+                  >
+                    <Icon className="mb-3 h-5 w-5 text-primary" strokeWidth={1.75} />
+                    <h4 className="text-sm font-semibold leading-tight">{title}</h4>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{text}</p>
+                  </article>
+                ))}
+              </div>
+
+              <div className="mt-4 rounded-xl border border-border/50 bg-background/30">
+                <button
+                  type="button"
+                  onClick={() => setDetailsOpen((open) => !open)}
+                  aria-expanded={detailsOpen}
+                  className="flex w-full items-center justify-between gap-4 p-4 text-left text-sm font-semibold"
+                >
+                  <span>Conheça um pouco mais da trajetória</span>
+                  <ChevronDown
+                    className={`h-4 w-4 shrink-0 text-primary transition-transform ${detailsOpen ? 'rotate-180' : ''}`}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                {detailsOpen && (
+                  <div className="grid gap-3 border-t border-border/50 p-4 sm:grid-cols-2">
+                    {details.map(({ icon: Icon, title, text }) => (
+                      <div key={title} className="flex gap-3 text-left">
+                        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
+                        <div>
+                          <p className="text-sm font-semibold">{title}</p>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">{text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                 <a
