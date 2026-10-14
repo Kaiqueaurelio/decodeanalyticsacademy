@@ -42,6 +42,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "8.6.1",
+    date: "2026-10-14",
+    title: "Salvamento real de apostilas",
+    description: "O botão salvar agora grava de verdade e a apostila aparece na hora para aluno e admin.",
+    changes: [
+      { kind: 'fix', text: 'Salvamento direto no banco com confirmação (removidas chamadas a funções inexistentes).' },
+      { kind: 'fix', text: 'Telas do aluno e do admin atualizam imediatamente após salvar.' },
+      { kind: 'fix', text: 'Novas apostilas nascem publicadas e com semestre deduzido pela matéria.' },
+    ],
+  },
+  {
     version: "8.6.0",
     date: "2026-09-05",
     title: "Central de Conteúdo",
