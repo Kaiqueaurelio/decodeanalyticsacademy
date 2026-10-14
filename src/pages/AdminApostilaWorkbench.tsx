@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,6 +71,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const id = overrideId || routeId;
   const selectedPageId = searchParams.get('page');
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const refreshStudentViews = () => { void queryClient.invalidateQueries(); };
   const { user } = useAuth();
 
   // Estado da lista lateral
@@ -655,6 +658,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         localStorage.removeItem(`apostila_backup_${id}_${selectedPageId}`);
       }
       setLastSavedAt(new Date(savedAt));
+      refreshStudentViews();
       if (isManual) toast.success('Página salva com sucesso.');
       return true;
     }
@@ -706,7 +710,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       category,
       content,
       published: content.trim().length > 0 && chronology.status !== 'error' ? true : published,
-      semester,
+      semester: semester ?? guessSemesterFromCategory(category) ?? null,
       course: course.length ? course : null,
       saved_date: savedDate || getLocalDateIso(),
     };
@@ -777,6 +781,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setApostilas((prev) =>
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
+    refreshStudentViews();
     if (isManual) toast.success('Apostila salva com sucesso.');
     
     // Create snapshot after successful save
