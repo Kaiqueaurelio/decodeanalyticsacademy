@@ -22,7 +22,7 @@ import { Loader2, BookPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { SEMESTER_OPTIONS } from '@/lib/subject-semester-map';
+import { SEMESTER_OPTIONS, guessSemesterFromCategory } from '@/lib/subject-semester-map';
 
 interface QuickCreateApostilaDialogProps {
   open: boolean;
