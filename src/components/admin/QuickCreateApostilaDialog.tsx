@@ -82,9 +82,9 @@ export function QuickCreateApostilaDialog({
         .insert({
           title: title.trim(),
           category: category.trim(),
-          semester: semester === 'none' ? null : parseInt(semester),
-          published: false,
-          status: 'bloqueada',
+          semester: semester === 'none' ? guessSemesterFromCategory(category.trim()) : parseInt(semester),
+          published: true,
+          status: 'liberada',
           content: template === 'template' 
             ? '# ' + title.trim() + '\n\nComece a escrever aqui...' 
             : '',
