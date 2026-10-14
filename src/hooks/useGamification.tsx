@@ -99,7 +99,7 @@ export function useGamification() {
 
   const updateStreak = useCallback(async () => {
     if (!user) return;
-    const { data: updatedStreak, error } = await supabase.rpc('record_study_streak', {
+    const { data: updatedStreak, error }: { data: any; error: any } = await (supabase.rpc as any)('record_study_streak', {
       _user_id: user.id,
     });
 
@@ -135,9 +135,10 @@ export function useGamification() {
     const alreadyHas = userBadges.some(ub => ub.badge_id === badge.id);
     if (alreadyHas) return;
 
-    const { data: awardResult, error } = await supabase.rpc('award_badge', {
+    const { data: awardRaw, error } = await supabase.rpc('award_badge', {
       _criteria: criteria,
     });
+    const awardResult = awardRaw as Record<string, any> | null;
     if (!error && awardResult?.awarded) {
       setUserBadges(prev => [...prev, { id: awardResult.badge_id || '', badge_id: badge.id, earned_at: new Date().toISOString() }]);
       await loadAll();

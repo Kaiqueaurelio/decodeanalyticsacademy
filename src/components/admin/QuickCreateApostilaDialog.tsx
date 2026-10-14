@@ -22,7 +22,7 @@ import { Loader2, BookPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { SEMESTER_OPTIONS } from '@/lib/subject-semester-map';
+import { SEMESTER_OPTIONS, guessSemesterFromCategory } from '@/lib/subject-semester-map';
 
 interface QuickCreateApostilaDialogProps {
   open: boolean;
@@ -82,9 +82,9 @@ export function QuickCreateApostilaDialog({
         .insert({
           title: title.trim(),
           category: category.trim(),
-          semester: semester === 'none' ? null : parseInt(semester),
-          published: false,
-          status: 'bloqueada',
+          semester: semester === 'none' ? guessSemesterFromCategory(category.trim()) : parseInt(semester),
+          published: true,
+          status: 'liberada',
           content: template === 'template' 
             ? '# ' + title.trim() + '\n\nComece a escrever aqui...' 
             : '',
