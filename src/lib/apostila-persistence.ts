@@ -21,52 +21,46 @@ export interface ApostilaPagePersistenceDraft {
   savedDate: string | null;
 }
 
+// Persistência direta: as RPCs save_apostila/save_apostila_page não existem no
+// banco, então gravamos com update + select para confirmar o conteúdo salvo.
 export async function saveApostilaWithRevision(draft: ApostilaPersistenceDraft) {
-  const params = {
-    _apostila_id: draft.apostilaId,
-    _expected_revision: draft.expectedRevision,
-    _title: draft.title,
-    _category: draft.category,
-    _content: draft.content,
-    _published: draft.published,
-    _semester: draft.semester,
-    _course: draft.course,
-    _saved_date: draft.savedDate,
+  const payload = {
+    title: draft.title,
+    category: draft.category,
+    content: draft.content,
+    published: draft.published,
+    status: draft.published ? 'liberada' : undefined,
+    semester: draft.semester,
+    course: draft.course,
+    saved_date: draft.savedDate,
+    updated_at: new Date().toISOString(),
   } as any;
-  let result = await supabase.rpc('save_apostila' as any, params);
+  if (!payload.status) delete payload.status;
+  const run = () => supabase.from('apostilas').update(payload).eq('id', draft.apostilaId).select('id, title, content');
+  let result: any = await run();
   if (isTransientSaveError(result.error)) {
     const confirmed = await findSavedApostila(draft);
     if (confirmed) return confirmed;
-    // Uma única repetição com a mesma revisão é segura: se a primeira chamada
-    // tiver concluído após o timeout, o banco responderá conflito e faremos a
-    // leitura de confirmação; se não concluiu, esta chamada salva o rascunho.
-    result = await supabase.rpc('save_apostila' as any, params);
-    if (isRevisionConflict(result.error)) {
-      const savedAfterRetry = await findSavedApostila(draft);
-      if (savedAfterRetry) return savedAfterRetry;
-    }
+    result = await run();
   }
   return confirmSavedDraft(result, draft.apostilaId, draft);
 }
 
 export async function saveApostilaPageWithRevision(draft: ApostilaPagePersistenceDraft) {
-  const params = {
-    _page_id: draft.pageId,
-    _apostila_id: draft.apostilaId,
-    _expected_revision: draft.expectedRevision,
-    _title: draft.title,
-    _content: draft.content,
-    _saved_date: draft.savedDate,
+  const payload = {
+    title: draft.title,
+    content: draft.content,
+    saved_date: draft.savedDate,
+    updated_at: new Date().toISOString(),
   } as any;
-  let result = await supabase.rpc('save_apostila_page' as any, params);
+  const run = () => supabase.from('apostila_pages').update(payload)
+    .eq('id', draft.pageId).eq('apostila_id', draft.apostilaId)
+    .select('id, apostila_id, title, content, position, created_at, updated_at, saved_date');
+  let result: any = await run();
   if (isTransientSaveError(result.error)) {
     const confirmed = await findSavedPage(draft);
     if (confirmed) return confirmed;
-    result = await supabase.rpc('save_apostila_page' as any, params);
-    if (isRevisionConflict(result.error)) {
-      const savedAfterRetry = await findSavedPage(draft);
-      if (savedAfterRetry) return savedAfterRetry;
-    }
+    result = await run();
   }
   return confirmSavedDraft(result, draft.pageId, draft, draft.apostilaId);
 }

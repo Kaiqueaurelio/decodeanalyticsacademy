@@ -662,7 +662,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     const { data: currentApostila, error: currentApostilaError } = await supabase
       .from('apostilas')
-      .select('title, content, content_revision')
+      .select('title, content')
       .eq('id', id)
       .single();
 
